@@ -9,7 +9,11 @@ void setup() {
 }
 
 void draw () {
+
   drawTetraeder(200);
+  
+  pushMatrix();
+  rotateX(radians(10));
   xstart += 0.01; 
   ystart += 0.01;
   xnoise = xstart; 
@@ -22,11 +26,15 @@ void draw () {
       drawPoint(x, y, noise(xnoise, ynoise));
     }
   }
+  popMatrix();
+  
+  
 }
 
 void drawPoint(float x, float y, float noiseFactor) { 
   pushMatrix();
-  translate(x, 250 - y, -y);
+  
+  translate(x, height - y, 10 - y);
   float sphereSize = noiseFactor * 35;
   
   //blue ocean
@@ -46,10 +54,13 @@ void drawPoint(float x, float y, float noiseFactor) {
 }
 
 void drawTetraeder(int edge) {
+  
+  pushMatrix();
   translate(width/2, height/2, 0);
   //rotateY(frameCount * 0.001); //dynamische Rotation
   rotateX(radians(45.00));
-  rotateZ(radians(45.0));
+  rotateY(radians(180));
+  rotateZ(radians(45.00));
 
   fill(100);
   beginShape(TRIANGLE_STRIP);
@@ -81,4 +92,7 @@ void drawTetraeder(int edge) {
   vertex(0, 0, edge);
   vertex(0, edge, 0);
   endShape();
+  
+
+  popMatrix();
 }
