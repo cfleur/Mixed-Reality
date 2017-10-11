@@ -11,7 +11,11 @@ void setup() {
 void draw () {
 
   drawTetraeder(200);
-  //drawGrass();
+  drawWater();
+  drawGrass();
+}
+
+void drawWater() {
 
   pushMatrix();
   rotateX(radians(10));
@@ -24,58 +28,63 @@ void draw () {
     xnoise = xstart;
     for (int x=0; x<=width; x+=5) {
       xnoise += 0.1; 
+      // drawGrassPoint(x, y, noise(xnoise, ynoise));
       drawPoint(x, y, noise(xnoise, ynoise));
     }
   }
   popMatrix();
 }
+void drawGrass() {
 
-/*void drawGrass() {
- ystart += 0.01;
- xnoise = xstart; 
- ynoise = ystart;
- float z = 0;
- for (int y=0; y<=height; y+=5) {
- ynoise += 0.1; 
- xnoise = xstart;
- for (int x=0; x<=width; x+=5) {
- xnoise += 0.1; 
- for (z=0; z<=width; z+=5) {
- 
- drawGrassPoint(x, y, z, noise(xnoise, ynoise));
- }
- }
- }/**  xstart += 0.01; 
- ystart += 0.01;
- xnoise = xstart; 
- ynoise = ystart;
- for (int y=0; y<=height; y+=5) {
- ynoise += 0.1; 
- xnoise = xstart;
- for (int x=0; x<=width; x+=5) {
- xnoise += 0.1; 
- drawGrassPoint(x, y, noise(xnoise, ynoise));
- }
- }   
+  xstart += 0.01; 
+  ystart += 0.01;
+  xnoise = xstart; 
+  ynoise = ystart;
+  for (int y=0; y<=height; y+=5) {
+    ynoise += 0.1; 
+    xnoise = xstart;
+    for (int x=-(2* width); x<=(2* width); x+=5) {
+      //for (int x=0; x<=width; x+=5) {
+
+      xnoise += 0.1; 
+      drawGrassPoint(x, y, noise(xnoise, ynoise));
+      //       drawPoint(x, y, noise(xnoise, ynoise));
+    }
+  }
+}
+
+//for 3d point, not working
+/*void drawGrassPoint(float x, float y, float z, float noiseFactor) { 
+ pushMatrix();
+ translate(x, height - y, z);
+ float sphereSize = 0;
+ float green = 150 + (noiseFactor * 120);
+ float blue = 150 + (noiseFactor * 0.5);
+ float alph = 150 + (noiseFactor * 120);
+ fill(0, green, blue, alph);
+ sphere(sphereSize);
+ //box(sphereSize);
+ popMatrix();
  }*/
 
-void drawGrassPoint(float x, float y, float z, float noiseFactor) { 
+void drawGrassPoint(float x, float y, float noiseFactor) { 
   pushMatrix();
-  translate(x, height - y, z);
-  float sphereSize = noiseFactor * 12;
+  translate(x, height - y - 3, 10-y);
+  float sphereSize = noiseFactor * 120;
   float green = 150 + (noiseFactor * 120);
   float blue = 150 + (noiseFactor * 0.5);
   float alph = 150 + (noiseFactor * 120);
   fill(0, green, blue, alph);
-  sphere(sphereSize);
+  //sphere(sphereSize);
+  box(sphereSize);
   popMatrix();
 }
 
 void drawPoint(float x, float y, float noiseFactor) { 
   pushMatrix();
 
-  translate(x, height - y, 10 - y);
-  float sphereSize = noiseFactor * 35;
+  translate(x, height-y+5, 40-y);
+  float sphereSize = noiseFactor * 13;
 
   //blue ocean
   float blue = 150 + (noiseFactor * 120);
