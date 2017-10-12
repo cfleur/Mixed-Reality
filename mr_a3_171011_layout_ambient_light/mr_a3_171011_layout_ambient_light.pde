@@ -24,9 +24,9 @@ void draw() {
 // All Function for the main color box
 void color_preview(){
   if(c_selected == c_check){
-    fill(c_selected);
-  }else{
     fill(c_highlight);
+  }else{
+    fill(c_selected);
   }
   strokeWeight(1);
   stroke(c_highlight);
