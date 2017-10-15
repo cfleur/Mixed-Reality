@@ -21,10 +21,11 @@ void setup() {
   background(c_bg);
 
   strokeWeight(10);
-  stroke(c_highlight);
+  stroke(c_cursor);
   pos_preview = new Position(30, 30);
   b_preview = new Button(c_highlight, pos_preview, 640, 60); //preview box
-
+  
+  strokeWeight(1);
   pos_sunrise = new Position(50., 580.);
   b_sunrise = new Button(c_highlight, pos_sunrise, 600., 80.); //first suggestion "Sunrise"
   PFont font = loadFont("SitkaDisplay-Italic-36.vlw");
