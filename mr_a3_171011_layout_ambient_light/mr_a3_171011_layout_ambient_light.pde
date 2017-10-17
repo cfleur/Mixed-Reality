@@ -1,9 +1,10 @@
 color c_bg = color(60, 71, 72); // background color of the application
 color c_highlight = color(83, 93, 96); // highlight color to highlight important UI elements
-color c_cursor = color(33, 33, 33); //color of the cursor
+/*?? = color of borders ??*/color c_cursor = color(33, 33, 33); //color of the cursor 
 color c_selected, c_check = color(256, 256, 256); // should never happen in RGB 0-255 space, so we can check if value is set
 color c_sunrise = color(255, 202, 112);
 color c_underwater = color(35, 198, 193);
+/*cat*/color c_labels = color(200, 200, 200);
 
 Position pos_preview;
 Button b_preview;
@@ -15,6 +16,10 @@ Position pos_underwater;
 Button b_underwater;
 Position pos_water_color_field;
 Button b_water_color_field;
+/*cat*/Position pos_intensityHi;
+/*cat*/Position pos_intensityLo;
+/*cat*/Position pos_satHi;
+/*cat*/Position pos_satLo;
 
 void setup() {
   size(700, 800);
@@ -126,7 +131,10 @@ void color_picker() {
 void select_brightness() {
   stroke(c_cursor);
   strokeWeight(10);
-  line(width/7.5, height/4, width/7.5, height/1.8);
+  /*cat-need these variables to be global...*/float brightnessY = width/7.5;
+  float brightnessHi = height/4;
+  float brightnessLo = height/1.8;
+  line(brightnessY, brightnessHi, brightnessY, brightnessLo);
 }
 
 
