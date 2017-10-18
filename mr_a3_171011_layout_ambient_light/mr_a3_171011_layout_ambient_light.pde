@@ -16,30 +16,36 @@ Position pos_underwater;
 Button b_underwater;
 Position pos_water_color_field;
 Button b_water_color_field;
-/*cat*/Position pos_intensityHi;
-/*cat*/Position pos_intensityLo;
+/*cat*/Position pos_brightHi;
+/*cat*/Position pos_brightLo;
 /*cat*/Position pos_satHi;
 /*cat*/Position pos_satLo;
 
 void setup() {
+  // Window
   size(700, 800);
   background(c_bg);
 
+  // Preview box
   strokeWeight(10);
   stroke(c_cursor);
   pos_preview = new Position(30, 30);
   b_preview = new Button(c_highlight, pos_preview, 640, 60); //preview box
   
+  // Text Font and stroke
+  PFont font = loadFont("SitkaDisplay-Italic-36.vlw");
   strokeWeight(1);
+  
+  // Sunrise Button
   pos_sunrise = new Position(50., 580.);
   b_sunrise = new Button(c_highlight, pos_sunrise, 600., 80.); //first suggestion "Sunrise"
-  PFont font = loadFont("SitkaDisplay-Italic-36.vlw");
   fill(c_sunrise);
   textFont(font);
   text("Sunrise", 70, 630);
   pos_sunrise_color_field = new Position(350, 590);
   b_sun_color_field = new Button(c_sunrise, pos_sunrise_color_field, 290, 60);
 
+  // Underwater buton
   pos_underwater = new Position(50, 690);
   b_underwater = new Button(c_highlight, pos_underwater, 600, 80); //second suggestion "under water world"
   fill(c_underwater);
