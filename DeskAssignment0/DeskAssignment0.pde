@@ -1,42 +1,81 @@
+/* Processing desk assignment:
+ " The Beautiful Desk "
+ 
+ This sketch explores the possibilities of interactive lighting and camera movements.
+ A class Desk is created and textured using a PShape group.
+ Local lighting is applied, which can be controlled by the mouse.
+ 4 Methods of changing the viewing angle are avaliable, each needs improvement.
+ 
+ Suggestions for further implementation:
+ - Space background option with array of stars and nebulas made with 
+ perlin noise and force/flow fields. (try https://youtu.be/sor1nwNIP9A 
+ or https://youtu.be/BjoM9oKOAKY and https://youtu.be/17WoOqgXsRM)
+ - "Particle rain" falling on desk with physics (try https://youtu.be/wB1pcXtEwIs)
+ - Wall option with global lighting scheme
+ - Objects on desk with additional light and shadows
+ - Use of lighting remote ( previous assignment, also try https://youtu.be/kRdw-Cm8BZ4)
+ */
+
+
 Desk desk;
 PImage img;
 
 void setup() {
-  size(400, 400, P3D);
-  frameRate(10);
+  size(600, 600, P3D);
+  frameRate(25);
 
   img = loadImage("wood-911002_1920.jpg");
-  desk = new Desk(200, 20, 80, img);
+  desk = new Desk(200, 20, 80, img); // arugements are size of desk and texture
 }
+
+
 void draw() {
-  background(105);
-
-  // guides
-  stroke(200, 225, 245, 200);
-  strokeWeight(2);
-  line(-40, height/2, -40, width+40, height/2, -40);
-  line(width/2, -40, -40, width/2, height+40, -40);
-
+  background(95);
   directionalLight(200, 200, 200, -1, 1, -1);
   ambientLight(100, 100, 100);
 
-  pushMatrix();
-  float a = mouseY;
-  if (mousePressed == true) {
-    rotateX(map(a, 0, height, -PI, PI));
-    //translate(0,(map(a,0,height, height/-2,height/2)), 0);
-    desk.disp(width/2, height/2, -40); // negative z value is 1/2 zSize to center on x axiz
-    println(a);
-  } else /*if (mousePressed == false)*/ {
-    //noLoop();
-    // rotateX(radians(a));
-    // ! Trying to get desk to stay in the position that mouse is released. 
-    //! Try mouseReleased()?
-    desk.disp(width/2, height/2, -40);
-  }
-  popMatrix();
-}
 
+  /* ----- Choose viewing method and uncomment selected:
+   (Methods all need improving). ----- */
+
+  // ----- Method 1) rotate desk around x axis
+  //drawDesk();
+
+  // ----- Method 2) rotate camera on mouse over
+  //desk.disp(width/2, height/2, -40); // arguements are position of desk
+  //camera(mouseX, mouseY, (mouseY/2) / tan(PI*30.0 / 180.0), 
+  //  width/2.0, height/2.0, 0, 
+  //  0, 1, 0);
+
+
+  // ----- Method 3) rotate camera on mouse dragged (lines 91 - 96)
+
+  // ----- Method 4) rotate light on mouse over
+  
+  // Initialize camera matrix
+  camera(width/3, height/3, (height/2) / tan(PI*45.0 / 180.0), 
+    width/2.0, height/2.0, 0, 
+    0, 1, 0);
+  // Draw guides (optional)
+  stroke(200, 225, 245, 200);
+  strokeWeight(2);
+  line(-width, height/2, -40, width*2, height/2, -40); // horizontal
+  line(width/2, -height, -40, width/2, height*2, -40); // vertical
+  
+  // Draw desk
+  desk.disp(width/2, height/2, -40); // arguements are position of desk
+  
+  // Change camera matrix on mouse over
+  camera(mouseX, mouseY, (mouseY/2) / tan(PI*30.0 / 180.0), 
+    width/2.0, height/2.0, 0, 
+    0, 1, 0);
+
+  // Draw guides (optional)
+  //stroke(200, 225, 245, 200);
+  //strokeWeight(2);
+  //line(-width, height/2, -40, width*2, height/2, -40); // horizontal
+  //line(width/2, -height, -40, width/2, height*2, -40); // vertical
+}
 
 
 class Desk {
@@ -45,11 +84,13 @@ class Desk {
   float xSize;
   float ySize;
   float zSize;
+  PImage img;
 
-  Desk(float x_, float y_, float z_, PImage img) {
+  Desk(float x_, float y_, float z_, PImage img_) {
     xSize = x_;
     ySize = y_;
     zSize = z_;
+    img = img_;
   }
 
   void disp(float xPos, float yPos, float zPos) {
@@ -91,4 +132,26 @@ class Desk {
     shape(leg4); // draw front right leg
     popMatrix();
   }
+}
+
+//void mouseDragged() {
+
+//  camera(width/2.0, mouseY, (height/2.0) / tan(PI*30.0 / 180.0), 
+//        width/2.0, height/2.0, 0, 
+//        0, 1, 0);
+//  desk.disp(width/2, height/2, -40); // arguements are position of desk
+//}
+
+void drawDesk() {
+
+  pushMatrix();
+  float a = mouseY;
+  if (mousePressed == true) {
+    rotateX(map(a, 0, height, -PI, PI));
+    desk.disp(width/2, height/2, -40); // negative z value is 1/2 zSize 
+    // to center on x axiz
+    println(a);
+  } else 
+  desk.disp(width/2, height/2, -40); // arguements are position of desk
+  popMatrix();
 }
