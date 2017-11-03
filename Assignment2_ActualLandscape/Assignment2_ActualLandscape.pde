@@ -1,23 +1,22 @@
 import processing.opengl.*;
 float xstart, xnoise, ystart, ynoise;
 int cols, rows;
-int scale = 20;
-int w = 2000;
-int h = 1600;
-int waterHeight = 50;
-int vegetationLine = 100;
+int scale = 10;
+int w = 5000;
+int h = 4000;
+int waterHeight = 80;
+int vegetationLine = 150;
 
 
 float[][] raster;
 
 void setup() {
-  size(600, 600, P3D);
+  size(1200, 1200, P3D);
 
   cols = w/scale;
   rows = h/scale;
   raster = new float[cols][rows];
 
-  //water
   xstart = random(10); 
   ystart = random(10);
 
@@ -26,9 +25,9 @@ void setup() {
     float offsetX = 0;
     for (int x = 0; x < cols; x++) {
       raster[x][y] = map(noise(offsetX, offsetY), 0, 1, -80, 300);
-      offsetX += 0.2;
+      offsetX += 0.05;
     }
-    offsetY += 0.2;
+    offsetY += 0.05;
   }
   drawLandscape();
 }
@@ -39,8 +38,10 @@ void draw() {
 
 void drawLandscape() {
   background(0);
-  stroke(193, 217, 255);
-  fill(0);
+  stroke(209, 209, 209);
+  //fill(0);
+  fill(193, 217, 255,100);
+
 
   xstart += 0.01; 
   ystart += 0.01;
@@ -92,7 +93,7 @@ void drawGrassPoint(int x, int y, float z, float noiseFactor) {
   strokeWeight(0);
 
   translate(x, y, z);
-  float boxSize = noiseFactor * 5;
+  float boxSize = noiseFactor * 35;
   float green = 150 + (noiseFactor * 120);
   float blue = 150 + (noiseFactor * 0.5);
   float alph = 150 + (noiseFactor * 120);
@@ -101,7 +102,7 @@ void drawGrassPoint(int x, int y, float z, float noiseFactor) {
    float alph = 150 + (noiseFactor * 120);
    */
   fill(0, green, blue, alph);
-  sphere(boxSize);
+  box(boxSize);
   popMatrix();
 }
 
@@ -115,7 +116,7 @@ void drawWaterPoint(int x, int y, float z, float noiseFactor) {
    float green = 150 + (noiseFactor * 120);
    float blue = 150 + (noiseFactor * 0.5);
    float alph = 150 + (noiseFactor * 120);*/
-  float sphereSize = noiseFactor * 15;
+  float sphereSize = noiseFactor * 45;
   float blue = 150 + (noiseFactor * 120);
   float alph = 150 + (noiseFactor * 120);
   fill(0, 0, blue, alph);
