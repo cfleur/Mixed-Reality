@@ -79,7 +79,7 @@ void draw() {
       colorMode(RGB);
       fill(c_on);
       strokeWeight(3);
-      stroke(c_off);
+      stroke(c_bg);
       ellipse(width/2, height/2.5, 250, 250);
       stroke(c_offStroke);
       strokeWeight(8);
@@ -133,14 +133,14 @@ void draw() {
     //alter brightness
     if (mousePressed == true) {
       if (mouseX > width/7.5-5 && mouseX < width/7.5+5 && (mouseY > height/4 && mouseY < height/1.8)) {
-        b_preview.setBrightness(100*(float)((mouseY-(height/4))/((height/1.8)-(height/4))));
+        b_preview.setBrightness(100 - 100*(float)((mouseY-(height/4))/((height/1.8)-(height/4))));
       }
     }
 
     //alter saturation
     if (mousePressed == true) {
       if (mouseX > (width-width/7.5)-5 && mouseX < 5 + (width - width/7.5) && (mouseY > height/4 && mouseY < height/1.8)) {
-        b_preview.setSaturation(100*(float)((mouseY-(height/4))/((height/1.8)-(height/4))));
+        b_preview.setSaturation(100 - 100*(float)((mouseY-(height/4))/((height/1.8)-(height/4))));
       }
     }
   } else {
