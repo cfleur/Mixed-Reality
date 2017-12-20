@@ -100,6 +100,7 @@ class Desk {
     float legZ = xSize*0.06;
 
     noStroke();
+    fill(255, 255, 255);
     top = createShape(BOX, xSize, ySize, zSize);
     leg1 = createShape(BOX, legX, legY, legZ);
     leg2 = createShape(BOX, legX, legY, legZ);
@@ -131,8 +132,58 @@ class Desk {
     translate(0, 0, (zSize-legZ-(edge)));
     shape(leg4); // draw front right leg
     popMatrix();
+    
+    Papers(xPos, yPos -10, zPos, 5);
+    Lamp(xPos + 60, yPos - 10, zPos - 20);
   }
 }
+
+
+void Papers(float x, float y, float z, int ammount){
+    //print("drawing papers on desk");
+    for(int i = 0; i <= ammount; i++){
+      pushMatrix();
+      fill(255, 255, 255);
+      translate(x, y - i, z);
+      rotateY(map(i, 0, ammount, 0, TWO_PI / 24));
+      box(21, 1, 29);
+      popMatrix();
+    }
+  }
+
+void Lamp(float x, float y, float z){
+    int basesize = 9;
+    int supportline = 31;
+    
+    
+    pushMatrix();
+    
+    translate(x, y, z);
+    fill(79, 245, 251);
+    sphere(basesize);
+    
+    translate(0,-basesize - supportline/2,0);
+    fill(103, 97, 87);
+    box(1, supportline, 1);
+    
+    translate(0,-supportline/2,0);
+    fill(79, 245, 251);
+    sphere(2);
+    
+    rotateY(- TWO_PI / 7);
+    fill(103, 97, 87);
+    translate(0,0,supportline/2);
+    box(1, 1, supportline);
+    
+    
+    translate(0,0,supportline/2);
+    fill(79, 245, 251);
+    box(4, 2, 10);
+    popMatrix();
+}
+
+
+
 
 //void mouseDragged() {
 
