@@ -51,7 +51,7 @@ void setup () {
   camera(0.0, 200.0, -200.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0);
 
   //--- Mootion captures ---
-  Mocap mocap1 = new Mocap("test1-001.bvh");// found at http://www.motioncapturedata.com
+  Mocap mocap1 = new Mocap("../data/test1-001.bvh");// found at http://www.motioncapturedata.com
 
   //--- To draw mocaps, specify:
   //which mocap; the time offset (starting frame); the space offset (translation); the scale; the color; the stroke weight. 
