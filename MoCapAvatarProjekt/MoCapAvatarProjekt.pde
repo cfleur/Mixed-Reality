@@ -43,6 +43,12 @@
 
 MocapInstance mocapinst;
 
+
+PVector origin;
+PVector instantiate0, instantiate1;
+ParticleSystem particlesys0, particlesys1;
+float zCoord = ((height/2) / tan(PI*30.0 / 180.0)*3);
+
 void setup () {
   //--- Display --- 
   // size(1280, 960, OPENGL);
@@ -56,12 +62,39 @@ void setup () {
   //--- To draw mocaps, specify:
   //which mocap; the time offset (starting frame); the space offset (translation); the scale; the color; the stroke weight. 
   mocapinst = new MocapInstance(mocap1, 0, new float[] {0., -20, -100.}, 1., color(255, 255, 0), 3);
+  
+  
+  origin = new PVector(width/2, height/2, 0); // sets the origin to the center 
+  instantiate0 = new PVector(0, -20, 0); // location to spawn object
+  instantiate1 = new PVector(0, -20, 0); // location to spawn object
+  particlesys0 = new ParticleSystem(instantiate0);
+  particlesys1 = new ParticleSystem(instantiate1);
 }
 
 void draw() {
   //cameraMan();
   background(100, 100, 100);
   drawGroundPlane(300);
+  PVector g = new PVector(0, 0.1, 0);
+  particlesys0.addForce(g);
+  particlesys1.addForce(g.mult(0.1));
+
+  if (keyPressed) {
+        PVector wind = new PVector(random(-1, 1), random(-1, 1), random(-1, 1));
+        particlesys0.addForce(wind); // spheres
+        particlesys1.addForce(wind); // cubes
+
+  }
+
+  particlesys0.addParticle(random(3, 8)); // spheres
+  particlesys0.startSys();
+
+  particlesys1.addParticleCube(random(3, 8)); // cubes
+  particlesys1.startSys();  
+
+
+  
+  
   mocapinst.drawMocap();
 
   /*
@@ -113,14 +146,19 @@ class MocapInstance {
     translate(translation[0], translation[1], translation[2]);
     scale(scl);
     for (Joint itJ : mocap.joints) {
-         if (!(itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe") ||itJ.name.toString().equals("EndSitenull"))) {
+            println(itJ.name);
+            
+      if (!(itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe") ||itJ.name.toString().equals("EndSitenull"))) {
       //if (itJ.name.toString().equals("LeftKnee")/*||itJ.name.toString().equals("LeftAnkle")||itJ.name.toString().equals("LeftToe")*/) {
-      println(itJ.name);
       pushMatrix();
       translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
       float midX = -(itJ.position.get(currentFrame).x - itJ.parent.position.get(currentFrame).x) ;
       float midY = -(itJ.position.get(currentFrame).y - itJ.parent.position.get(currentFrame).y) ;
       float midZ = -(itJ.position.get(currentFrame).z - itJ.parent.position.get(currentFrame).z) ;
+      if(itJ.name.toString().equals("Chest")){
+        particlesys0.addForce(new PVector(midX, midY, midZ));
+        particlesys1.addForce(new PVector(midX, midY, midZ));
+      }
       translate(midX/2, midY/2, midZ/2);
       
       
