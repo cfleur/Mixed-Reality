@@ -16,25 +16,22 @@
  - Use of lighting remote ( previous assignment, also try https://youtu.be/kRdw-Cm8BZ4)
  */
 
-
 Desk desk;
 PImage img;
+int size = 300;
 
 void setup() {
   size(600, 600, P3D);
   frameRate(25);
-
   img = loadImage("wood-911002_1920.jpg");
   desk = new Desk(200, 20, 80, img); // arugements are size of desk and texture
 }
 
-
 void draw() {
-  background(95);
+  background(95); 
   directionalLight(200, 200, 200, -1, 1, -1);
   ambientLight(100, 100, 100);
-
-
+  
   /* ----- Choose viewing method and uncomment selected:
    (Methods all need improving). ----- */
 
@@ -77,7 +74,6 @@ void draw() {
   //line(width/2, -height, -40, width/2, height*2, -40); // vertical
 }
 
-
 class Desk {
   PShape top, leg1, leg2, leg3, leg4;
 
@@ -100,6 +96,7 @@ class Desk {
     float legZ = xSize*0.06;
 
     noStroke();
+    fill(255, 255, 255);
     top = createShape(BOX, xSize, ySize, zSize);
     leg1 = createShape(BOX, legX, legY, legZ);
     leg2 = createShape(BOX, legX, legY, legZ);
@@ -131,8 +128,87 @@ class Desk {
     translate(0, 0, (zSize-legZ-(edge)));
     shape(leg4); // draw front right leg
     popMatrix();
+    
+    Papers(xPos, yPos -10, zPos, 5);
+    Lamp(xPos + 60, yPos - 10, zPos - 20);
+    Books(xPos-50, yPos-13, zPos, color(255,0,0), 130);
+    Books(xPos-50, yPos-18, zPos, color(0,255,0), 150);
+    drawPlane(xPos, yPos+150, zPos-40);
   }
 }
+
+void drawPlane(float x, float y, float z) {
+  pushMatrix();
+  translate(x,y,z);
+  fill(31, 109, 49);
+  beginShape();
+  vertex( -size, -50, -size);
+  vertex( size, -50, -size);
+  vertex( size, -50, size);
+  vertex( -size, -50, size);
+  endShape();
+  popMatrix();
+}
+
+void Books(float x, float y, float z, color col, float rot) {
+  pushMatrix();
+  /*translate(xPos-60,yPos-20,zPos+200);
+  rotateX(80);
+  rotateZ(100);
+  fill(col);
+  box(40,50,5);*/
+  translate(x, y, z);
+  rotateY(rot);
+  fill(col);
+  box(60, 5, 32);
+  popMatrix();
+}
+
+void Papers(float x, float y, float z, int ammount){
+    //print("drawing papers on desk");
+    for(int i = 0; i <= ammount; i++){
+      pushMatrix();
+      fill(255, 255, 255);
+      translate(x, y - i, z);
+      rotateY(map(i, 0, ammount, 0, TWO_PI / 24));
+      box(21, 1, 29);
+      popMatrix();
+    }
+  }
+
+void Lamp(float x, float y, float z){
+    int basesize = 9;
+    int supportline = 31;
+    
+    
+    pushMatrix();
+    
+    translate(x, y, z);
+    fill(79, 245, 251);
+    sphere(basesize);
+    
+    translate(0,-basesize - supportline/2,0);
+    fill(103, 97, 87);
+    box(1, supportline, 1);
+    
+    translate(0,-supportline/2,0);
+    fill(79, 245, 251);
+    sphere(2);
+    
+    rotateY(- TWO_PI / 7);
+    fill(103, 97, 87);
+    translate(0,0,supportline/2);
+    box(1, 1, supportline);
+    
+    
+    translate(0,0,supportline/2);
+    fill(79, 245, 251);
+    box(4, 2, 10);
+    popMatrix();
+}
+
+
+
 
 //void mouseDragged() {
 
