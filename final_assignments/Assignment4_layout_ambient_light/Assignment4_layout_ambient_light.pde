@@ -1,5 +1,6 @@
-/*By Heiderose Borrek (70469110), fill in your names!!*/
-/*Bla,bli,blub, why does it looks like how it looks like.*/
+/*By Heiderose Borrek (70469110), Celine Hilgendrof(70469222), Till Meyer-Arlt, Catherine Fate*/
+/*With the big round, white Button you can switch the light on. If you did this you can change 
+the color, saturation and brightness of the ligtht. You can activate special programs like "sunrise" as well.*/
 color c_bg = color(60, 71, 72); // background color of the application
 color c_highlight = color(83, 93, 96); // highlight color to highlight important UI elements
 color c_cursor = color(33, 33, 33); //color of the cursor
