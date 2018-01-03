@@ -59,6 +59,7 @@ void setup () {
   // size(1280, 960, OPENGL);
   size(800, 600, P3D);
   frameRate(75); 
+  sphereDetail(20);
   //camera(0.0, 100.0, -320.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0);
 
   //--- Camera ---
@@ -169,7 +170,7 @@ class MocapInstance {
       }
 
       //if (!(itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe") ||itJ.name.toString().equals("EndSitenull"))) {
-        // draw bodyparts
+      // draw bodyparts
       if (countEnds == 0) {
         println("Torso");
         fill(255, 0, 0);
@@ -229,7 +230,6 @@ class MocapInstance {
         translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
         strokeWeight(0);
         fill(0);
-        sphereDetail(20);
         sphere(5*sqrt(2)-2);
         //box(7,7,7);
         popMatrix();
@@ -241,13 +241,13 @@ class MocapInstance {
         itJ.parent.position.get(currentFrame).x, 
         itJ.parent.position.get(currentFrame).y, 
         itJ.parent.position.get(currentFrame).z);
-    //}
-  }
+      //}
+    }
 
-  popMatrix();
-  currentFrame = (currentFrame+1) % (mocap.frameNumber);
-  if (currentFrame==lastFrame+1) currentFrame = firstFrame;
-}
+    popMatrix();
+    currentFrame = (currentFrame+1) % (mocap.frameNumber);
+    if (currentFrame==lastFrame+1) currentFrame = firstFrame;
+  }
 }
 
 class Mocap {
