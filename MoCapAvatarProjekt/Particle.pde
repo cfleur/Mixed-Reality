@@ -24,7 +24,8 @@ class Particle {
   void addForce(PVector force) {
     //acc = new PVector(random(-0.05, 0.05), 0.1, random(-0.05, 0.05));
     force.normalize();
-    force.mult(0.05);
+    force.mult(0.5);
+    force.y += 0.01;
     acc.add(force);
   }
 

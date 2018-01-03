@@ -156,8 +156,8 @@ class MocapInstance {
       float midY = -(itJ.position.get(currentFrame).y - itJ.parent.position.get(currentFrame).y) ;
       float midZ = -(itJ.position.get(currentFrame).z - itJ.parent.position.get(currentFrame).z) ;
       if(itJ.name.toString().equals("Chest")){
-        particlesys0.addForce(new PVector(midX, midY, midZ));
-        particlesys1.addForce(new PVector(midX, midY, midZ));
+        particlesys0.addForce(new PVector( 0 - midX, -20 - midY, 0 - midZ));
+        particlesys1.addForce(new PVector( 0 - midX, -20 - midY, 0 - midZ));
       }
       translate(midX/2, midY/2, midZ/2);
       
