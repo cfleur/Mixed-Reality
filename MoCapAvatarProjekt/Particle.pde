@@ -17,7 +17,7 @@ class Particle {
     vel = new PVector(0, 0, 0);
     acc = new PVector(random(-0.05, 0.05), 0.0, random(-0.05, 0.05));
     life = new PVector(0, 0, 0);
-    maxspeed = random(10,100);
+    maxspeed = 5;
     loc.add(instanceloc);
   }
 

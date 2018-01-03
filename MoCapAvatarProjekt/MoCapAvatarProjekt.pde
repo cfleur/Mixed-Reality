@@ -1,3 +1,7 @@
+import peasy.*;
+import peasy.org.apache.commons.math.*;
+import peasy.org.apache.commons.math.geometry.*;
+
 // Reads, processes, and displays motion capture BVH files (.bvh)
 //
 // Assumes there's only one hierarchy per file.
@@ -41,8 +45,9 @@
 //          (The root position posR and the angles defining R1, R2, and R3, form the data
 //                given at each frame.)
 
-MocapInstance mocapinst;
+PeasyCam cam;
 
+MocapInstance mocapinst;
 
 PVector origin;
 PVector instantiate0, instantiate1;
@@ -54,48 +59,55 @@ void setup () {
   // size(1280, 960, OPENGL);
   size(800, 600, P3D);
   frameRate(75); 
-  camera(0.0, 100.0, -320.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0);
+  //camera(0.0, 100.0, -320.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0);
+
+  //--- Camera ---
+  cam = new PeasyCam(this, 0, -100, 0, 450);
 
   //--- Mootion captures ---
   Mocap mocap1 = new Mocap("Avatar-006#My MVN System.bvh");// found at http://www.motioncapturedata.com
 
   //--- To draw mocaps, specify:
   //which mocap; the time offset (starting frame); the space offset (translation); the scale; the color; the stroke weight. 
-  mocapinst = new MocapInstance(mocap1, 0, new float[] {0., -20, -100.}, 1., color(255, 255, 0), 3);
-  
-  
+  mocapinst = new MocapInstance(mocap1, 0, new float[] {0., -20, -100.}, 1., color(0), 3);
+
+
   origin = new PVector(width/2, height/2, 0); // sets the origin to the center 
-  instantiate0 = new PVector(0, -20, 0); // location to spawn object
-  instantiate1 = new PVector(0, -20, 0); // location to spawn object
+  instantiate0 = new PVector(0, -40, 0); // location to spawn object
+  instantiate1 = new PVector(0, -40, 25); // location to spawn object
   particlesys0 = new ParticleSystem(instantiate0);
   particlesys1 = new ParticleSystem(instantiate1);
 }
 
 void draw() {
-  //cameraMan();
   background(100, 100, 100);
+  lights();
+  rotateX(PI);
+  rotateY(PI/6);
+
   drawGroundPlane(300);
-  PVector g = new PVector(0, 0.1, 0);
-  particlesys0.addForce(g);
-  particlesys1.addForce(g.mult(0.1));
+
+  PVector antig = new PVector(0, 0.01, 0);
+  particlesys0.addForce(antig);
+  particlesys1.addForce(antig);
 
   if (keyPressed) {
-        PVector wind = new PVector(random(-1, 1), random(-1, 1), random(-1, 1));
-        particlesys0.addForce(wind); // spheres
-        particlesys1.addForce(wind); // cubes
-
+    PVector wind = new PVector(random(-1, 1), random(-1, 1), random(-1, 1));
+    particlesys0.addForce(wind); // spheres
+    particlesys1.addForce(wind); // cubes
   }
 
-  particlesys0.addParticle(random(3, 8)); // spheres
+  particlesys0.addParticle(random(3, 8));
   particlesys0.startSys();
 
-  particlesys1.addParticleCube(random(3, 8)); // cubes
+  particlesys1.addParticle(random(3, 8));
   particlesys1.startSys();  
 
-
-  
-  
   mocapinst.drawMocap();
+
+  cam.beginHUD();
+  displayTime();
+  cam.endHUD();
 
   /*
   pushMatrix();
@@ -145,24 +157,48 @@ class MocapInstance {
     strokeWeight(strkWgt);
     translate(translation[0], translation[1], translation[2]);
     scale(scl);
+    int countEnds = 0;
+
     for (Joint itJ : mocap.joints) {
-            println(itJ.name);
-            
-      if (!(itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe") ||itJ.name.toString().equals("EndSitenull"))) {
-      //if (itJ.name.toString().equals("LeftKnee")/*||itJ.name.toString().equals("LeftAnkle")||itJ.name.toString().equals("LeftToe")*/) {
+      println(itJ.name);
+
+
+      if (itJ.name.toString().equals("EndSitenull")) {
+        countEnds++;
+        println(countEnds);
+      }
+
+      //if (!(itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe") ||itJ.name.toString().equals("EndSitenull"))) {
+        // draw bodyparts
+      if (countEnds == 0) {
+        println("Torso");
+        fill(255, 0, 0);
+      } else if (countEnds == 1) {
+        println("Right arm + head");
+        fill(0, 255, 0);
+      } else if (countEnds == 2) {
+        println("Left arm + right hand");
+        fill(255, 255, 255);
+      } else if (countEnds == 3) {
+        println("Right leg");
+        fill(0, 255, 255);
+      } else if (countEnds == 4) {
+        println("Left leg");
+        fill(0, 255, 255);
+      } else
+        fill(0);
+
       pushMatrix();
       translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
       float midX = -(itJ.position.get(currentFrame).x - itJ.parent.position.get(currentFrame).x) ;
       float midY = -(itJ.position.get(currentFrame).y - itJ.parent.position.get(currentFrame).y) ;
       float midZ = -(itJ.position.get(currentFrame).z - itJ.parent.position.get(currentFrame).z) ;
-      if(itJ.name.toString().equals("Chest")){
-        particlesys0.addForce(new PVector( 0 - midX, -20 - midY, 0 - midZ));
+      if (itJ.name.toString().equals("Chest")) {
+        particlesys0.addForce(new PVector( 0 - midX, -20 - midY, 0 - midZ).mult(0.01));
         particlesys1.addForce(new PVector( 0 - midX, -20 - midY, 0 - midZ));
       }
       translate(midX/2, midY/2, midZ/2);
-      
-      
-            
+
       //float a = atan(midY/midX);
       //rotateZ(radians(a));
       //float b = atan(midZ/midY);
@@ -170,32 +206,33 @@ class MocapInstance {
       //float c = atan(midX/midZ);
       //rotateY(radians(c));
       //      println(a,b,c);
-      
-      float a = atan2(midY,midX);
-      rotateZ(a);
-      float b = atan2(midZ,midY);
-      rotateX(radians(b));
-      float c = atan2(midX,midZ);
-      rotateY(radians(c));
-//println(a,b,c);
 
-   
+      float a = atan2(midY, midX);
+      rotateZ(a);
+      float b = atan2(midZ, midY);
+      rotateX(radians(b));
+      float c = atan2(midX, midZ);
+      rotateY(radians(c));
+      //println(a,b,c);
+
+
       strokeWeight(3);
       //noFill();
-      fill(#0000EE);
+      //fill(#0000EE);
       box(/*Y*/(midX/cos(a))-4, 10, 10);
       popMatrix();
 
-      if (!(itJ.name.toString().equals("EndSitenull"))){//||itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe"))) {
-      pushMatrix();
-      translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
-      strokeWeight(0);
-      fill(#EE0000);
-      sphereDetail(20);
-      sphere(5*sqrt(2)-2);
-      //box(7,7,7);
-      popMatrix();
 
+      // draw joints
+      if (!(itJ.name.toString().equals("EndSitenull"))) {//||itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe"))) {
+        pushMatrix();
+        translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
+        strokeWeight(0);
+        fill(0);
+        sphereDetail(20);
+        sphere(5*sqrt(2)-2);
+        //box(7,7,7);
+        popMatrix();
       }
 
       line(itJ.position.get(currentFrame).x, 
@@ -204,12 +241,13 @@ class MocapInstance {
         itJ.parent.position.get(currentFrame).x, 
         itJ.parent.position.get(currentFrame).y, 
         itJ.parent.position.get(currentFrame).z);
-    } }
-
-    popMatrix();
-    currentFrame = (currentFrame+1) % (mocap.frameNumber);
-    if (currentFrame==lastFrame+1) currentFrame = firstFrame;
+    //}
   }
+
+  popMatrix();
+  currentFrame = (currentFrame+1) % (mocap.frameNumber);
+  if (currentFrame==lastFrame+1) currentFrame = firstFrame;
+}
 }
 
 class Mocap {
@@ -342,6 +380,30 @@ class Joint {
 // Functions --------------------------
 //-------------------------------------
 
+void displayTime() {
+  // Calculate time from start of program
+
+  int sec = millis()/1000;
+  int min = millis()/60000;
+  if (sec >= 60)
+    sec -= 60*min;
+
+  // Draw time box and text
+  textSize(20);
+  pushMatrix();
+  translate(width-150, height-50);
+  float timeboxX = width/5.5;
+  float timeboxY = height/15;
+  fill(10);
+  rect(0, 0, timeboxX, timeboxY);
+  fill(0, 200, 0);
+  if (sec < 10)
+    text("Time "+min+":0"+sec, timeboxX/9, timeboxY/1.4);
+  else
+    text("Time "+min+":"+sec, timeboxX/10, timeboxY/1.4);
+  popMatrix();
+}
+
 void drawGroundPlane( int size ) {
   noStroke();
   fill(40, 140, 60);
@@ -415,77 +477,4 @@ PVector applyMatPVect(float[][] A, PVector v) {
   Av.y = A[1][0]*v.x + A[1][1]*v.y + A[1][2]*v.z;
   Av.z = A[2][0]*v.x + A[2][1]*v.y + A[2][2]*v.z;
   return Av;
-}
-
-
-void cameraMan() {
-
-  // Camera manipulation
-
-  float a, b, c;
-
-
-
-  // x manipulation
-
-  if (mouseX >= width/2)
-
-    a = (width/2)-(map(mouseX, width/2, width, 0, width/2));
-
-  else if (mouseX < width/2)
-
-    a = (width/2)+(map(mouseX, width/2, 0, 0, width/2));
-
-  else a = width/2;
-
-
-
-  // y manipulation
-
-  if (mouseY >= height/2)
-
-    b = (height/2)-(map(mouseY, height/2, height, 0, height/2));
-
-  else if (mouseY < height/2)
-
-    b = (height/2)+(map(mouseY, height/2, 0, 0, height/2));
-
-  else b = height/2;
-
-
-
-
-
-  // z manipulation ----- ! not working
-
-  if (mousePressed) {
-
-
-
-    // z manipulation
-
-    if (mouseY >= height/2)
-
-      c = (map(mouseY, height/2, height, 0, height/2)/2) / tan(PI*30.0 / 180.0);
-
-    else if (mouseY < height/2)
-
-      c = (map(mouseY, height/2, 0, 0, height/2)/2) / tan(PI*30.0 / 180.0);
-
-    else c = (height/2) / tan(PI*30.0 / 180.0);
-  } else c = (height/2) / tan(PI*30.0 / 180.0);
-
-
-
-  camera(a, b, -400.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0);
-
-
-
-  //        directionalLight(a-100, b-100, c-100, 
-
-  //          width/2.0, height/2.0, 0);
-
-
-
-  //        ambientLight(a-100, b-100, c-100);
 }

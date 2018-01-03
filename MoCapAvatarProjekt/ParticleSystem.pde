@@ -16,8 +16,7 @@ class ParticleSystem {
 
   void addParticleCube(float size_) {
     size = size_;
-    //particleList.add(new ParticleCube(size, location));
-    particleList.add(new Particle(size, location));
+    particleList.add(new ParticleCube(size, location));
   }
 
   void addForce(PVector force) {
