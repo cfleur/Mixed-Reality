@@ -11,7 +11,7 @@ class ParticleSystem {
 
   void addParticle(float size_) {
     size = size_;
-    particleList.add(new Particle(size, location));
+    particleList.add(new Particle(size, new PVector(random(-200, 200), -20, random(-200, 200))));
   }
 
   void addParticleCube(float size_) {

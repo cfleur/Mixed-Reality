@@ -1,4 +1,4 @@
-// COH, HBHB, TVMA
+// COH, HBHB, TVMA, CF
 //mondrian
 
 
@@ -8,6 +8,14 @@ void setup() {
   strokeWeight(10);
   magie(0, 0, height - 5, width - 5, 0);
 }
+
+void draw(){
+   if (mousePressed == true) {
+    background(255);
+    magie(0, 0, height - 5, width - 5, 0);
+  } 
+}
+
 
 void magie(int x, int y, int w, int h, int step) {
 
