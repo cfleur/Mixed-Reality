@@ -48,11 +48,12 @@ import peasy.org.apache.commons.math.geometry.*;
 PeasyCam cam;
 
 MocapInstance mocapinst;
-
+PShape floor;
 PVector origin;
 PVector instantiate0, instantiate1;
 ParticleSystem particlesys0, particlesys1;
 float zCoord = ((height/2) / tan(PI*30.0 / 180.0)*3);
+PImage floor_img;
 
 void setup () {
   //--- Display --- 
@@ -74,10 +75,12 @@ void setup () {
 
 
   origin = new PVector(width/2, height/2, 0); // sets the origin to the center 
-  instantiate0 = new PVector(0, -40, 0); // location to spawn object
+  instantiate0 = new PVector(random(-20, 20), -40, random(-20, 20)); // location to spawn object
   instantiate1 = new PVector(0, -40, 25); // location to spawn object
   particlesys0 = new ParticleSystem(instantiate0);
   particlesys1 = new ParticleSystem(instantiate1);
+  
+  floor_img = loadImage("img/wiese.jpg");
 }
 
 void draw() {
@@ -88,12 +91,12 @@ void draw() {
 
   drawGroundPlane(300);
 
-  PVector antig = new PVector(0, 0.01, 0);
+  PVector antig = new PVector(random(-0.1,0.1), 0.05, random(-0.1,0.1));
   particlesys0.addForce(antig);
   particlesys1.addForce(antig);
 
   if (keyPressed) {
-    PVector wind = new PVector(random(-1, 1), random(-1, 1), random(-1, 1));
+    PVector wind = new PVector(random(-1, 1), random(0, 0.2), random(-1, 1));
     particlesys0.addForce(wind); // spheres
     particlesys1.addForce(wind); // cubes
   }
@@ -105,6 +108,8 @@ void draw() {
   particlesys1.startSys();  
 
   mocapinst.drawMocap();
+
+
 
   cam.beginHUD();
   displayTime();
@@ -161,7 +166,7 @@ class MocapInstance {
     int countEnds = 0;
 
     for (Joint itJ : mocap.joints) {
-      println(itJ.name);
+      println(itJ.name + "!");
 
 
       if (itJ.name.toString().equals("EndSitenull")) {
@@ -194,9 +199,21 @@ class MocapInstance {
       float midX = -(itJ.position.get(currentFrame).x - itJ.parent.position.get(currentFrame).x) ;
       float midY = -(itJ.position.get(currentFrame).y - itJ.parent.position.get(currentFrame).y) ;
       float midZ = -(itJ.position.get(currentFrame).z - itJ.parent.position.get(currentFrame).z) ;
+      
+      
       if (itJ.name.toString().equals("Chest")) {
-        particlesys0.addForce(new PVector( 0 - midX, -20 - midY, 0 - midZ).mult(0.01));
-        particlesys1.addForce(new PVector( 0 - midX, -20 - midY, 0 - midZ));
+        PVector point = new PVector(midX, midY, midZ);
+        point.normalize();
+        //point.mult(500);
+        
+        println("");
+        println(point.x);
+        println(point.y);
+        println(point.z);
+        println("");
+        
+        particlesys0.fleefrombody(point);
+        particlesys1.fleefrombody(point);
       }
       translate(midX/2, midY/2, midZ/2);
 
@@ -405,14 +422,15 @@ void displayTime() {
 }
 
 void drawGroundPlane( int size ) {
+  pushMatrix();
+  rotateX(PI / 2);
   noStroke();
-  fill(40, 140, 60);
-  beginShape();
-  vertex( -size, -50, -size );
-  vertex( size, -50, -size );
-  vertex( size, -50, size );
-  vertex( -size, -50, size );
-  endShape();
+  fill(150,206,180);
+  //noFill();
+  floor = createShape(QUAD, -size, -size, size, -size, size, size, -size, size);
+  floor.setTexture(floor_img);
+  shape(floor);
+  popMatrix();
 }
 
 float[][] multMat(float[][] A, float[][] B) {//computes the matrix product AB

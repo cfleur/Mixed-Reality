@@ -1,6 +1,9 @@
 class Particle {
   float radius;
   float maxspeed;
+  float maxlife;
+  float firstcolor;
+  float secondcolor;
   PShape shape;
   PVector loc;
   PVector vel;
@@ -17,19 +20,25 @@ class Particle {
     vel = new PVector(0, 0, 0);
     acc = new PVector(random(-0.05, 0.05), 0.0, random(-0.05, 0.05));
     life = new PVector(0, 0, 0);
+    maxlife = random(100, 600);
+    firstcolor = random(50,100);
+    secondcolor = random(100,maxlife);
     maxspeed = 5;
     loc.add(instanceloc);
   }
 
   void addForce(PVector force) {
-    //acc = new PVector(random(-0.05, 0.05), 0.1, random(-0.05, 0.05));
-    force.normalize();
-    force.mult(0.2);
-    //force.add(loc.mult(-0.2).normalize());
-    force.x = force.x * (loc.x * 0.01);
-    force.z = force.z * (loc.z * 0.01);
+    //acc = new PVector(random(-0.01, 0.01), random(0,0.01), random(-0.01, 0.01));
     acc.add(force);
   }
+  
+  void fleefrombody(PVector body){
+    PVector temp = body.sub(loc);
+    temp.y = 0;
+    acc.add(temp.normalize());    
+  }
+  
+  
 
   void updateParticle() {
     //println("life = ", life); 
@@ -46,13 +55,13 @@ class Particle {
     // set appearance according to life stage
     shape.setStrokeWeight(0);
     sphereDetail(20);
-    if (life.y >= 100.0 && life.y < 200.0) { // ! need reference to global coordinate system
+    if (life.y >= firstcolor && life.y < secondcolor) { // ! need reference to global coordinate system
       //println("life 1 over");
-      shape.setFill(color(200, 100, 100));
-    } else if (life.y >= 200.0) {
+      shape.setFill(color(255,204,92));
+    } else if (life.y >= secondcolor) {
       //println("life 2 over");
-      shape.setFill(color(100, 200, 100));
-    } else shape.setFill(color(100, 100, 200));
+      shape.setFill(color(255,238,173));
+    } else shape.setFill(color(255,111,105));
   }
 
   void drawParticle() {
@@ -63,7 +72,7 @@ class Particle {
   }
 
   boolean livesOver() {
-    if (life.y >= 300.0) {
+    if (life.y >= maxlife) {
       //println("livesOver");
       return true;
     } else return false;

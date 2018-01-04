@@ -11,7 +11,7 @@ class ParticleSystem {
 
   void addParticle(float size_) {
     size = size_;
-    particleList.add(new Particle(size, new PVector(random(-200, 200), -20, random(-200, 200))));
+    particleList.add(new Particle(size, location));
   }
 
   void addParticleCube(float size_) {
@@ -22,6 +22,11 @@ class ParticleSystem {
   void addForce(PVector force) {
     for (Particle particle : particleList)
       particle.addForce(force);
+  }
+  
+  void fleefrombody(PVector body){
+      for (Particle particle : particleList)
+        particle.fleefrombody(body);   
   }
 
 
