@@ -91,11 +91,13 @@ void draw() {
 
   drawGroundPlane(300);
 
+  //antig is now inside the particle
   PVector antig = new PVector(random(-0.1,0.1), 0.05, random(-0.1,0.1));
-  particlesys0.addForce(antig);
-  particlesys1.addForce(antig);
+  particlesys0.addForce(antig); // spheres
+  particlesys1.addForce(antig); // cubes 
 
-  if (keyPressed) {
+  if (keyPressed){
+    particlesys0.addParticle(random(3, 8));
     PVector wind = new PVector(random(-1, 1), random(0, 0.2), random(-1, 1));
     particlesys0.addForce(wind); // spheres
     particlesys1.addForce(wind); // cubes
@@ -203,15 +205,6 @@ class MocapInstance {
       
       if (itJ.name.toString().equals("Chest")) {
         PVector point = new PVector(midX, midY, midZ);
-        point.normalize();
-        //point.mult(500);
-        
-        println("");
-        println(point.x);
-        println(point.y);
-        println(point.z);
-        println("");
-        
         particlesys0.fleefrombody(point);
         particlesys1.fleefrombody(point);
       }
