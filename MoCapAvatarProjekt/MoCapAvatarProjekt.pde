@@ -76,7 +76,7 @@ void setup () {
   origin = new PVector(width/2, height/2, 0); // sets the origin to the center 
   particlesys0 = new ParticleSystem();
   particlesys1 = new ParticleSystem();
-  
+
   floor_img = loadImage("img/wiese.jpg");
 }
 
@@ -89,12 +89,12 @@ void draw() {
   drawGroundPlane(300);
 
   //antig is now inside the particle
-  PVector antig = new PVector(random(-0.2,0.2), 0.05, random(-0.2,0.2));
+  PVector antig = new PVector(random(-0.2, 0.2), 0.05, random(-0.2, 0.2));
   // JUST TEMP FOR TESTING THE PARTICLE BEHAVIOR
-  //particlesys0.addForce(antig); // spheres
-  //particlesys1.addForce(antig); // cubes 
+  particlesys0.addForce(antig); // spheres
+  particlesys1.addForce(antig); // cubes 
 
-  if (keyPressed){
+  if (keyPressed) {
     particlesys0.addParticleCube(random(3, 8));
     PVector wind = new PVector(random(-0.6, 0.6), random(0, 0.01), random(-0.6, 0.6));
     particlesys0.addForce(wind); // spheres
@@ -194,21 +194,20 @@ class MocapInstance {
       } else
         fill(0);
 
+      
+      //PVector point = new PVector(midX/2, midY/2, midZ/2);
+      PVector point = new PVector(itJ.parent.position.get(currentFrame).x + translation[0], itJ.parent.position.get(currentFrame).y + translation[1], itJ.parent.position.get(currentFrame).z + translation[2]);
+      //PVector point = new PVector(150,0,150);
+      particlesys0.fleefrombody(point);
+      particlesys1.fleefrombody(point);
+
       pushMatrix();
       translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
       float midX = -(itJ.position.get(currentFrame).x - itJ.parent.position.get(currentFrame).x) ;
       float midY = -(itJ.position.get(currentFrame).y - itJ.parent.position.get(currentFrame).y) ;
       float midZ = -(itJ.position.get(currentFrame).z - itJ.parent.position.get(currentFrame).z) ;
-      
-      
-        PVector point = new PVector(midX, midY, midZ);
-        //PVector point = new PVector(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
-        println(point.x);
-        println(point.y);
-        println(point.z);
-        particlesys0.fleefrombody(point);
-        particlesys1.fleefrombody(point);
-     
+
+
       translate(midX/2, midY/2, midZ/2);
 
       //float a = atan(midY/midX);
@@ -419,7 +418,7 @@ void drawGroundPlane( int size ) {
   pushMatrix();
   rotateX(PI / 2);
   noStroke();
-  fill(150,206,180);
+  fill(150, 206, 180);
   //noFill();
   floor = createShape(QUAD, -size, -size, size, -size, size, size, -size, size);
   floor.setTexture(floor_img);

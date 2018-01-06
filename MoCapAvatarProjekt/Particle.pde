@@ -34,23 +34,19 @@ class Particle {
     }
     
     void fleefrombody(PVector body){
-      pushMatrix();
-      translate(body.x, body.y, body.z);
-      box(10);
-      popMatrix();
       //PVector temp = body.sub(loc);
-      PVector temp = new PVector(loc.x,loc.y,loc.z).sub(body);
+      PVector temp = new PVector(loc.x,0,loc.z).sub(body);
       float distance = temp.mag();
       temp.normalize();
       temp.y = 0;
       
       //force depends on distance from body
-      temp.mult((1 / distance) * 10);
+      temp.mult((1 / distance) * 20);
      
      // force towards the body, if too far away
      // random change, so there is no "ring" around the body,
      // but a more natural spread
-     if(distance >= 40 && random(0,2) >= 0.9){
+     if(distance >= 80 && random(0,2) >= 0.9){
        temp.mult(-1);
      }
      
