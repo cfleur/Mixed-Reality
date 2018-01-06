@@ -34,25 +34,25 @@ class Particle {
     }
     
     void fleefrombody(PVector body){
+      pushMatrix();
+      translate(body.x, body.y, body.z);
+      box(10);
+      popMatrix();
+      //PVector temp = body.sub(loc);
       PVector temp = new PVector(loc.x,loc.y,loc.z).sub(body);
+      float distance = temp.mag();
       temp.normalize();
       temp.y = 0;
-      /*
-      if(temp.x >= 0){
-        loc.x += (1 - temp.x + random(-0.1,0.1));
-      }else{
-        loc.x -= (1 - (-temp.x) + random(-0.1,0.1));
-      }
-
-      if(temp.z >= 0){
-        loc.z += (1 - temp.z + random(-0.1,0.1));
-      }else{
-        loc.z -= (1 - (-temp.z) + random(-0.1,0.1));
-      } */
       
-      //loc.z += (1 - temp.z + random(-0.1,0.1)) / 100;
+      //force depends on distance from body
+      temp.mult((1 / distance) * 10);
      
-     
+     // force towards the body, if too far away
+     // random change, so there is no "ring" around the body,
+     // but a more natural spread
+     if(distance >= 40 && random(0,2) >= 0.9){
+       temp.mult(-1);
+     }
      
       loc.add(temp);
     }
@@ -74,11 +74,11 @@ class Particle {
      sphereDetail(20);
     if (life.y >= firstcolor && life.y < secondcolor) { // ! need reference to global coordinate system
       //println("life 1 over");
-      shape.setFill(color(255,204,92));
+      shape.setFill(color(55,83,131));
     } else if (life.y >= secondcolor) {
       //println("life 2 over");
-      shape.setFill(color(255,238,173));
-    } else shape.setFill(color(255,111,105));
+      shape.setFill(color(114,151,174));
+    } else shape.setFill(color(30,56,111));
    }
  
    void drawParticle() {

@@ -1,22 +1,20 @@
 class ParticleSystem {
   ArrayList<Particle> particleList;
   float size;
-  PVector location;
   Particle particle;
 
-  ParticleSystem(PVector location_) {
+  ParticleSystem() {
     particleList = new ArrayList<Particle>();
-    location = location_;
   }
 
   void addParticle(float size_) {
     size = size_;
-    particleList.add(new Particle(size, location));
+    particleList.add(new Particle(size, new PVector(random(-200, 200), 0, random(-200, 200))));
   }
 
   void addParticleCube(float size_) {
     size = size_;
-    particleList.add(new ParticleCube(size, location));
+    particleList.add(new ParticleCube(size, new PVector(random(-200, 200), 0, random(-200, 200))));
   }
 
   void addForce(PVector force) {

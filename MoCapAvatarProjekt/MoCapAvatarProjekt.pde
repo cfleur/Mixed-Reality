@@ -50,7 +50,6 @@ PeasyCam cam;
 MocapInstance mocapinst;
 PShape floor;
 PVector origin;
-PVector instantiate0, instantiate1;
 ParticleSystem particlesys0, particlesys1;
 float zCoord = ((height/2) / tan(PI*30.0 / 180.0)*3);
 PImage floor_img;
@@ -75,10 +74,8 @@ void setup () {
 
 
   origin = new PVector(width/2, height/2, 0); // sets the origin to the center 
-  instantiate0 = new PVector(random(-20, 20), -40, random(-20, 20)); // location to spawn object
-  instantiate1 = new PVector(0, -40, 25); // location to spawn object
-  particlesys0 = new ParticleSystem(instantiate0);
-  particlesys1 = new ParticleSystem(instantiate1);
+  particlesys0 = new ParticleSystem();
+  particlesys1 = new ParticleSystem();
   
   floor_img = loadImage("img/wiese.jpg");
 }
@@ -92,13 +89,14 @@ void draw() {
   drawGroundPlane(300);
 
   //antig is now inside the particle
-  PVector antig = new PVector(random(-0.1,0.1), 0.05, random(-0.1,0.1));
-  particlesys0.addForce(antig); // spheres
-  particlesys1.addForce(antig); // cubes 
+  PVector antig = new PVector(random(-0.2,0.2), 0.05, random(-0.2,0.2));
+  // JUST TEMP FOR TESTING THE PARTICLE BEHAVIOR
+  //particlesys0.addForce(antig); // spheres
+  //particlesys1.addForce(antig); // cubes 
 
   if (keyPressed){
-    particlesys0.addParticle(random(3, 8));
-    PVector wind = new PVector(random(-1, 1), random(0, 0.2), random(-1, 1));
+    particlesys0.addParticleCube(random(3, 8));
+    PVector wind = new PVector(random(-0.6, 0.6), random(0, 0.01), random(-0.6, 0.6));
     particlesys0.addForce(wind); // spheres
     particlesys1.addForce(wind); // cubes
   }
@@ -203,11 +201,14 @@ class MocapInstance {
       float midZ = -(itJ.position.get(currentFrame).z - itJ.parent.position.get(currentFrame).z) ;
       
       
-      if (itJ.name.toString().equals("Chest")) {
         PVector point = new PVector(midX, midY, midZ);
+        //PVector point = new PVector(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
+        println(point.x);
+        println(point.y);
+        println(point.z);
         particlesys0.fleefrombody(point);
         particlesys1.fleefrombody(point);
-      }
+     
       translate(midX/2, midY/2, midZ/2);
 
       //float a = atan(midY/midX);
