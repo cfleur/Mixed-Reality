@@ -305,7 +305,8 @@ class Mocap {
 
       //list joints, with parent
       if (words[0].equals("ROOT")||words[0].equals("JOINT")||words[0].equals("End")) {
-        Joint joint = new Joint(); // #bug THIS LINE IS BAD. We should move it to the bottom of this if-clause, then the EndSiteXXX will work :) 
+        Joint joint = new Joint(); 
+        joints.add(joint); // #bug THIS LINE IS BAD. We should move it to the bottom of this if-clause, then the EndSiteXXX will work :) 
         if (words[0].equals("End")) {
           joint.name = "EndSite"+((Joint)joints.get(joints.size()-1)).name;
           joint.isEndSite = 1;
@@ -318,8 +319,9 @@ class Mocap {
       }
 
       //find parent
-      if (words[0].equals("{"))
+      if (words[0].equals("{")){
         currentParent = (Joint)joints.get(joints.size()-1);
+      }
       if (words[0].equals("}")) {
         currentParent = currentParent.parent;
       }
