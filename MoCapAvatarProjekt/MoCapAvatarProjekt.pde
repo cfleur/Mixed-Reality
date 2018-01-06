@@ -89,14 +89,15 @@ void draw() {
   drawGroundPlane(300);
 
   //antig is now inside the particle
-  PVector antig = new PVector(random(-0.2, 0.2), 0.05, random(-0.2, 0.2));
+  PVector antig = new PVector(random(-0.02, 0.02), 0.01, random(-0.02, 0.02));
   // JUST TEMP FOR TESTING THE PARTICLE BEHAVIOR
   particlesys0.addForce(antig); // spheres
   particlesys1.addForce(antig); // cubes 
 
   if (keyPressed) {
+    
     particlesys0.addParticleCube(random(3, 8));
-    PVector wind = new PVector(random(-0.6, 0.6), random(0, 0.01), random(-0.6, 0.6));
+    PVector wind = new PVector(random(-0.2, 0.2), random(0, 0.01), random(-0.2, 0.2));
     particlesys0.addForce(wind); // spheres
     particlesys1.addForce(wind); // cubes
   }
@@ -173,6 +174,31 @@ class MocapInstance {
         countEnds++;
         println(countEnds);
       }
+      
+      
+      /* 
+      
+      // IF WE FIX THE BUG (STRG+F for "#bug"), WE FIND THE ENSITE WITH THIS SYNTAX
+      
+      if (itJ.name.toString().equals("EndSiteHead")) {
+        println("Torso");
+        fill(255, 0, 0);
+      } else if (itJ.name.toString().equals("EndSiteRightWrist")) {
+        println("Right arm + head");
+        fill(0, 255, 0);
+      } else if (itJ.name.toString().equals("EndSiteLeftWrist")) {
+        println("Left arm + right hand");
+        fill(255, 255, 255);
+      } else if (itJ.name.toString().equals("EndSiteRightToe")) {
+        println("Right leg");
+        fill(0, 255, 255);
+      } else if (itJ.name.toString().equals("EndSiteLeftToe")) {
+        println("Left leg");
+        fill(0, 255, 255);
+      }
+      
+      */
+      
 
       //if (!(itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe") ||itJ.name.toString().equals("EndSitenull"))) {
       // draw bodyparts
@@ -279,8 +305,7 @@ class Mocap {
 
       //list joints, with parent
       if (words[0].equals("ROOT")||words[0].equals("JOINT")||words[0].equals("End")) {
-        Joint joint = new Joint();
-        joints.add(joint);
+        Joint joint = new Joint(); // #bug THIS LINE IS BAD. We should move it to the bottom of this if-clause, then the EndSiteXXX will work :) 
         if (words[0].equals("End")) {
           joint.name = "EndSite"+((Joint)joints.get(joints.size()-1)).name;
           joint.isEndSite = 1;
