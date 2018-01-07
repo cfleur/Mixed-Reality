@@ -1,6 +1,7 @@
 import peasy.*;
-import peasy.org.apache.commons.math.*;
-import peasy.org.apache.commons.math.geometry.*;
+import toxi.geom.*;
+import toxi.geom.mesh.*;
+import toxi.processing.*;
 
 // Reads, processes, and displays motion capture BVH files (.bvh)
 //
@@ -45,48 +46,94 @@ import peasy.org.apache.commons.math.geometry.*;
 //          (The root position posR and the angles defining R1, R2, and R3, form the data
 //                given at each frame.)
 
-PeasyCam cam;
 
 MocapInstance mocapinst;
-PShape floor;
-PVector origin;
+ToxiclibsSupport render;
 ParticleSystem particlesys0, particlesys1;
-float zCoord = ((height/2) / tan(PI*30.0 / 180.0)*3);
-PImage floor_img;
+
+// ------- Camera -----
+PeasyCam cam;
+CameraState camReset;
+boolean resetCam = false;
+
+// ------- Terrain -----
+int SCALE = 20; // Scales the grid
+float GROUNDLEVEL = -2;
+
+// Terrain ground
+Mesh3D groundMesh;
+Terrain ground;
+float groundHeight = 200;
+int groundSize = 56; // Grid size, even number
+
+// Terrain water
+Mesh3D waterMesh;
+Terrain water;
+float waterHeight = 50;
+int waterSize = 18; // Grid size, even number
+PImage water_img;
+
+// Lamp
+boolean lampOn = false;
 
 void setup () {
   //--- Display --- 
-  // size(1280, 960, OPENGL);
   size(800, 600, P3D);
   frameRate(75); 
-  sphereDetail(20);
-  //camera(0.0, 100.0, -320.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0);
+  //sphereDetail(8);
+  smooth();
+  drawAxes();
 
   //--- Camera ---
-  cam = new PeasyCam(this, 0, -100, 0, 450);
+  cam = new PeasyCam(this, 0, 0, 0, 650);
+  cam.rotateY(PI*3/2);
+  cam.rotateX(PI/12);
+  //cam.rotateZ(PI/8);
+  cam.setMinimumDistance(200);
+  cam.setMaximumDistance(900);
+  cam.setSuppressRollRotationMode();
+  camReset = cam.getState();
+
+  // --- Graphics ---
+  render = new ToxiclibsSupport(this);
 
   //--- Mootion captures ---
   Mocap mocap1 = new Mocap("Avatar-006#My MVN System.bvh");// found at http://www.motioncapturedata.com
-
   //--- To draw mocaps, specify:
   //which mocap; the time offset (starting frame); the space offset (translation); the scale; the color; the stroke weight. 
-  mocapinst = new MocapInstance(mocap1, 0, new float[] {0., -20, -100.}, 1., color(0), 3);
+  mocapinst = new MocapInstance(mocap1, 0, new float[] {0., -20, -100.}, 0.9, color(0), 3);
 
+  // --- Terrain ---
+  water = new Terrain(waterSize, waterSize, SCALE);
+  ground = new Terrain(groundSize, groundSize, SCALE);
+  water_img = loadImage("img/water-1018808_640.jpg");
 
-  origin = new PVector(width/2, height/2, 0); // sets the origin to the center 
+  // --- Particles ---
   particlesys0 = new ParticleSystem();
   particlesys1 = new ParticleSystem();
-
-  floor_img = loadImage("img/wiese.jpg");
 }
 
 void draw() {
-  background(100, 100, 100);
+  println(resetCam);
+  if (resetCam) {
+    cam.setState(camReset, 1000);
+    resetCam = false;
+  }
+
+  background(120, 160, 200);
   lights();
+
   rotateX(PI);
+  drawAxes();
+
   rotateY(PI/6);
 
-  drawGroundPlane(300);
+  drawEarth();
+
+  drawLamp(200, -20, -200, lampOn);
+  drawLamp(-370, -70, -100, lampOn);
+  drawLamp(110, 12, -400, lampOn);
+  drawLamp(-160, -15, 160, lampOn);
 
   //antig is now inside the particle
   PVector antig = new PVector(random(-0.02, 0.02), 0.01, random(-0.02, 0.02));
@@ -95,25 +142,37 @@ void draw() {
   particlesys1.addForce(antig); // cubes 
 
   if (keyPressed) {
-    
-    particlesys0.addParticleCube(random(3, 8));
-    PVector wind = new PVector(random(-0.2, 0.2), random(0, 0.01), random(-0.2, 0.2));
+    emissive(0, 0, 255);
+    particlesys0.addParticleCube(random(2, 5));
+    PVector wind = new PVector(random(-0.2, 0.17), random(0.02), random(-0.2, 0.17));
     particlesys0.addForce(wind); // spheres
     particlesys1.addForce(wind); // cubes
-  }
-
-  particlesys0.addParticle(random(3, 8));
-  particlesys0.startSys();
-
-  particlesys1.addParticle(random(3, 8));
-  particlesys1.startSys();  
+  } 
 
   mocapinst.drawMocap();
 
+  drawRocks(120, -10, 120);
+  pushMatrix();
+  scale(1.2);
+  rotateX(PI);
+  rotateX(PI/15);
+  drawRocks(-160, 30, -55);
+  popMatrix();
 
+  pushMatrix();
+  rotateX(PI); 
+  rotateY(PI);
+  drawGround(ground, render, groundSize, groundHeight, 0.08);
+  drawWater(water, render, waterSize, waterHeight, 0.2);
+  popMatrix();
+
+  particlesys0.addParticle(random(2, 5));
+  particlesys0.startSys();
+  particlesys1.addParticle(random(2, 5));
+  particlesys1.startSys(); 
 
   cam.beginHUD();
-  displayTime();
+  displayUI();
   cam.endHUD();
 
   /*
@@ -160,6 +219,7 @@ class MocapInstance {
 
   void drawMocap() {
     pushMatrix();
+    pushStyle();
     stroke(clr);
     strokeWeight(strkWgt);
     translate(translation[0], translation[1], translation[2]);
@@ -174,31 +234,31 @@ class MocapInstance {
         countEnds++;
         println(countEnds);
       }
-      
-      
+
+
       /* 
-      
-      // IF WE FIX THE BUG (STRG+F for "#bug"), WE FIND THE ENSITE WITH THIS SYNTAX
-      
-      if (itJ.name.toString().equals("EndSiteHead")) {
-        println("Torso");
-        fill(255, 0, 0);
-      } else if (itJ.name.toString().equals("EndSiteRightWrist")) {
-        println("Right arm + head");
-        fill(0, 255, 0);
-      } else if (itJ.name.toString().equals("EndSiteLeftWrist")) {
-        println("Left arm + right hand");
-        fill(255, 255, 255);
-      } else if (itJ.name.toString().equals("EndSiteRightToe")) {
-        println("Right leg");
-        fill(0, 255, 255);
-      } else if (itJ.name.toString().equals("EndSiteLeftToe")) {
-        println("Left leg");
-        fill(0, 255, 255);
-      }
-      
-      */
-      
+       
+       // IF WE FIX THE BUG (STRG+F for "#bug"), WE FIND THE ENSITE WITH THIS SYNTAX
+       
+       if (itJ.name.toString().equals("EndSiteHead")) {
+       println("Torso");
+       fill(255, 0, 0);
+       } else if (itJ.name.toString().equals("EndSiteRightWrist")) {
+       println("Right arm + head");
+       fill(0, 255, 0);
+       } else if (itJ.name.toString().equals("EndSiteLeftWrist")) {
+       println("Left arm + right hand");
+       fill(255, 255, 255);
+       } else if (itJ.name.toString().equals("EndSiteRightToe")) {
+       println("Right leg");
+       fill(0, 255, 255);
+       } else if (itJ.name.toString().equals("EndSiteLeftToe")) {
+       println("Left leg");
+       fill(0, 255, 255);
+       }
+       
+       */
+
 
       //if (!(itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe") ||itJ.name.toString().equals("EndSitenull"))) {
       // draw bodyparts
@@ -220,7 +280,8 @@ class MocapInstance {
       } else
         fill(0);
 
-      
+
+      // Add force away from body to particles
       //PVector point = new PVector(midX/2, midY/2, midZ/2);
       PVector point = new PVector(itJ.parent.position.get(currentFrame).x + translation[0], itJ.parent.position.get(currentFrame).y + translation[1], itJ.parent.position.get(currentFrame).z + translation[2]);
       //PVector point = new PVector(150,0,150);
@@ -229,10 +290,14 @@ class MocapInstance {
 
       pushMatrix();
       translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
+      popMatrix();
+
+      // Draw body
+      pushMatrix();
+      translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
       float midX = -(itJ.position.get(currentFrame).x - itJ.parent.position.get(currentFrame).x) ;
       float midY = -(itJ.position.get(currentFrame).y - itJ.parent.position.get(currentFrame).y) ;
       float midZ = -(itJ.position.get(currentFrame).z - itJ.parent.position.get(currentFrame).z) ;
-
 
       translate(midX/2, midY/2, midZ/2);
 
@@ -252,13 +317,11 @@ class MocapInstance {
       rotateY(radians(c));
       //println(a,b,c);
 
-
       strokeWeight(3);
       //noFill();
       //fill(#0000EE);
       box(/*Y*/(midX/cos(a))-4, 10, 10);
       popMatrix();
-
 
       // draw joints
       if (!(itJ.name.toString().equals("EndSitenull"))) {//||itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe"))) {
@@ -280,6 +343,7 @@ class MocapInstance {
       //}
     }
 
+    popStyle();
     popMatrix();
     currentFrame = (currentFrame+1) % (mocap.frameNumber);
     if (currentFrame==lastFrame+1) currentFrame = firstFrame;
@@ -319,7 +383,7 @@ class Mocap {
       }
 
       //find parent
-      if (words[0].equals("{")){
+      if (words[0].equals("{")) {
         currentParent = (Joint)joints.get(joints.size()-1);
       }
       if (words[0].equals("}")) {
@@ -417,39 +481,321 @@ class Joint {
 // Functions --------------------------
 //-------------------------------------
 
-void displayTime() {
-  // Calculate time from start of program
+// --- Debugging ---
+void drawAxes() {
+  stroke(255, 0, 0);
+  line(-300, 0, 0, 300, 0, 0);
+  text("+x", 300, 0, 0);
+  text("-x", -330, 0, 0);
+  stroke(0, 255, 0);
+  line(0, -300, 0, 0, 300, 0);
+  text("+y", 0, 330, 0);
+  text("-y", 0, -300, 0);
+  stroke(0, 0, 255);
+  line(0, 0, -300, 0, 0, 300);
+  text("+z", 0, 0, 330);
+  text("-z", 0, 0, -300);
+}
 
+// --- Display non-moving parts (UI) ---
+void displayUI() {
+  PShape timeBox, resetBox, UIinfo;
+
+  // Calculate time from start of program
   int sec = millis()/1000;
   int min = millis()/60000;
   if (sec >= 60)
     sec -= 60*min;
 
   // Draw time box and text
+  pushStyle();
   textSize(20);
-  pushMatrix();
-  translate(width-150, height-50);
-  float timeboxX = width/5.5;
-  float timeboxY = height/15;
-  fill(10);
-  rect(0, 0, timeboxX, timeboxY);
+  strokeWeight(1);
+  stroke(255);
+  fill(15, 150);
+  timeBox = createShape();
+  timeBox.beginShape();
+  timeBox.vertex(width-10, height-10, 0);
+  timeBox.vertex(width-10, height-50, 0);
+  timeBox.vertex(width-140, height-50, 0);
+  timeBox.vertex(width-140, height-10, 0);
+  timeBox.endShape(CLOSE);
+  shape(timeBox);
+
+  if (mouseX >= width-300 && mouseX <= width-150 && mouseY >= height-50 && mouseY <= height-10) {
+    fill(50);
+  }
+
+  resetBox = createShape();
+  resetBox.beginShape();
+  resetBox.vertex(width-150, height-10, 0);
+  resetBox.vertex(width-150, height-50, 0);
+  resetBox.vertex(width-300, height-50, 0);
+  resetBox.vertex(width-300, height-10, 0);
+  resetBox.endShape(CLOSE);
+  shape(resetBox);
+
+  UIinfo = createShape();
+  UIinfo.beginShape();
+  UIinfo.noStroke();
+  UIinfo.vertex(width-310, height-10, 0);
+  UIinfo.vertex(width-310, height-100, 0);
+  UIinfo.vertex(width-790, height-100, 0);
+  UIinfo.vertex(width-790, height-10, 0);
+  UIinfo.endShape(CLOSE);
+  shape(UIinfo);
+
   fill(0, 200, 0);
   if (sec < 10)
-    text("Time "+min+":0"+sec, timeboxX/9, timeboxY/1.4);
+    text("Time "+min+":0"+sec, width-130, height-25);
   else
-    text("Time "+min+":"+sec, timeboxX/10, timeboxY/1.4);
+    text("Time "+min+":"+sec, width-130, height-25);
+
+  fill(225);
+  text("Reset camera", width-290, height-25);
+  textSize(16);
+  fill(0, 255, 0);
+  text("Interactivity", width-780, height-75);
+  fill(225);
+  text("UP key= lights on, DOWN key= lights off, any key= wind\nclick-drag-scroll= camera", width-780, height-50);
+
+  popStyle();
+}
+void mouseClicked() {
+  if (mouseX >= width-300 && mouseX <= width-150 && mouseY >= height-50 && mouseY <= height-10)
+    resetCam = true;
+}
+
+// --- Earth ---
+void drawEarth() {
+  PShape earth;
+  PImage earth_img;
+  earth = createShape(SPHERE, 300);
+  earth_img = loadImage("img/earth.jpg");
+  earth.setStrokeWeight(0);
+  earth.setTexture(earth_img);
+
+  pushMatrix();
+  pushStyle();
+  sphereDetail(20);
+  translate(700, 500, 1000);
+  rotateY(map(mouseY, 0, height, 0, TWO_PI));
+  rotateX(map(mouseX, 0, width, 0, TWO_PI));
+  shape(earth);
+  popStyle();
   popMatrix();
 }
 
-void drawGroundPlane( int size ) {
+// ----- Lamp -----
+void drawLamp(int x, int y, int z, boolean on) {
+  // x, y z define the base location of the lamp
   pushMatrix();
-  rotateX(PI / 2);
+  pushStyle();
+  strokeWeight(0);
+  fill(25, 20, 20);
+  translate(x, y, z);
+  cylinder(12, 6, 25, 15);
+  translate(0, 28, 0);
+  sphere(6);
+  cylinder(4, 4, 130, 15);
+  translate(0, 130, 0);
+  pushStyle();
+  fill(190);
+  if (on)
+    emissive(255);
+  sphere(10);
+  translate(0, 6, 0);
+  popStyle();
+  cylinder(18, 4, 8, 15);
+  if (on) {
+    //noLights();
+    //ambientLight(150, 150, 195);
+    pointLight(225, 225, 225, 0, -1, 0);
+  }
+  translate(0, 6, 0);
+  sphere(6);
+  popStyle();
+  popMatrix();
+}
+
+// ----- Lamp status -----
+void keyPressed() {
+  if (keyCode == UP)
+    lampOn = true; 
+  if (keyCode == DOWN)
+    lampOn = false;
+  else 
+  emissive(0, 0, 255);
+}
+
+// --- Rocks ---
+void drawRocks(float x, float y, float z) {
+  pushStyle();
+  pushMatrix();
+  shininess(-0.2);
+  sphereDetail(5);
+  strokeWeight(0);
+  translate(x, y, z);
+  fill(80, 60, 30);
+  sphere(70);
+  translate(35, 10, 40);
+  fill(70, 50, 20);
+  sphere(45);
+  translate(-15, 10, 40);
+  sphereDetail(4);
+  sphere(55);
+  translate(-70, -40, 20);
+  sphere(60);
+  translate(-40, 30, 40);
+  sphereDetail(5);
+  sphere(30);
+  popMatrix();
+  popStyle();
+}
+
+// --- Draw water ---
+void drawWater(Terrain terrain, ToxiclibsSupport gfx, int size, float height_, float diff) {
+  float [][] elevation = elevationInit(height_, size, diff);
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      terrain.setHeightAtCell(i, j, elevation[i][j]);
+      if (i < 1 || i > size-2) terrain.setHeightAtCell(i, j, GROUNDLEVEL);
+      if (j < 1 || j > size-2) terrain.setHeightAtCell(i, j, GROUNDLEVEL);
+    }
+  }
+
+  // Water texture
+  PShape shape; 
+  int sizeShape = size*SCALE;
+  textureMode(NORMAL);
+  pushStyle();
+  shape = createShape(); 
+  shape.setTexture(water_img);
+  shape.beginShape();
+  shape.noStroke();
+  texture(water_img);
+  shape.vertex(-sizeShape/2, 0, -sizeShape/2, 0, 0);
+  shape.vertex(-sizeShape/2, 0, (sizeShape/2)-SCALE, 0, 1);
+  shape.vertex((sizeShape/2)-SCALE, 0, (sizeShape/2)-SCALE, 1, 1);
+  shape.vertex((sizeShape/2)-SCALE, 0, -(sizeShape/2), 1, 0);
+  shape.vertex(-sizeShape/2, 0, -sizeShape/2, 0, 0);
+  shape.vertex(-(sizeShape/2)+SCALE, height_*0.7, -(sizeShape/2)+SCALE, 0, 1);
+  shape.vertex(-(sizeShape/2)+SCALE, height_*0.7, (sizeShape/2)-2*SCALE, 1, 1);
+  shape.vertex((sizeShape/2)-2*SCALE, height_*0.7, (sizeShape/2)-2*SCALE, 1, 0);
+  shape.vertex((sizeShape/2)-2*SCALE, height_*0.7, -(sizeShape/2)+SCALE, 0, 0);
+  shape.vertex(-(sizeShape/2)+SCALE, height_*0.7, -(sizeShape/2)+SCALE, 0, 1);
+  // ! Texture in 1st quadran not drawn correctly
+  shape.endShape(CLOSE);
+  shape.setStrokeWeight(4);
+  shape(shape);
+  popStyle();
+
+  // Draw water
+  waterMesh = terrain.toMesh(height_*0.8);
+  pushStyle();
   noStroke();
-  fill(150, 206, 180);
-  //noFill();
-  floor = createShape(QUAD, -size, -size, size, -size, size, size, -size, size);
-  floor.setTexture(floor_img);
-  shape(floor);
+  fill(0, 160, 200, 200);
+  emissive(0, 0, 255);
+  shininess(1.0);
+  gfx.mesh(waterMesh, false);
+  popStyle();
+}
+
+// --- Draw ground ---
+void drawGround(Terrain terrain, ToxiclibsSupport gfx, int size, float height_, float diff) {
+  float [][] elevation = elevationInit(height_, size, diff);
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      terrain.setHeightAtCell(i, j, elevation[i][j]);
+      if ((i > waterSize+2 && i < groundSize-waterSize && j > waterSize && j < groundSize-waterSize-1)) 
+        terrain.setHeightAtCell(i, j, GROUNDLEVEL);
+      if ((i > waterSize+2 && i < groundSize-waterSize-2 && j > waterSize+1 && j < groundSize-waterSize-2)) 
+        terrain.setHeightAtCell(i, j, GROUNDLEVEL+waterHeight+1);
+    }
+  }
+  groundMesh = terrain.toMesh(height_*0.8);
+  pushStyle();
+  noStroke();
+  fill(90, 50, 40);
+  emissive(75, 15, 40);
+  shininess(0.5);
+  gfx.mesh(groundMesh, true);
+
+  popStyle();
+}
+
+// --- Create elevation matrix ---
+float[][] elevationInit(float maxElevation, int size, float diff) {
+  float [][] yValues = new float [size][size];
+  float variation = maxElevation;// height/depth of mountains (z value)
+  //float diff = 0.1; // size of step change in y values
+  float waves = 0;
+  noiseSeed(2);
+
+  waves += diff;
+  float zDiff = waves;
+  for (int z = 0; z < size; z++) {
+    float xDiff = 0;
+    for (int x = 0; x < size; x++) {
+      yValues[z][x] = map(noise(xDiff, zDiff), 0, 1, variation, -variation);
+      xDiff += diff;
+    }
+    zDiff += diff;
+  }
+  return yValues;
+}
+
+// --- Cylinder ---
+void cylinder(float bottom, float top, float h, int sides) {
+  pushMatrix();
+  translate(0, h/2, 0);
+
+  float angle;
+  float[] x = new float[sides+1];
+  float[] z = new float[sides+1];
+
+  float[] x2 = new float[sides+1];
+  float[] z2 = new float[sides+1];
+
+  //get the x and z position on a circle for all the sides
+  for (int i=0; i < x.length; i++) {
+    angle = TWO_PI / (sides) * i;
+    x[i] = sin(angle) * bottom;
+    z[i] = cos(angle) * bottom;
+  }
+
+  for (int i=0; i < x.length; i++) {
+    angle = TWO_PI / (sides) * i;
+    x2[i] = sin(angle) * top;
+    z2[i] = cos(angle) * top;
+  }
+
+  //draw the bottom of the cylinder
+  beginShape(TRIANGLE_FAN);
+  vertex(0, -h/2, 0);
+
+  for (int i=0; i < x.length; i++) {
+    vertex(x[i], -h/2, z[i]);
+  }
+  endShape();
+
+  //draw the center of the cylinder
+  beginShape(QUAD_STRIP); 
+
+  for (int i=0; i < x.length; i++) {
+    vertex(x[i], -h/2, z[i]);
+    vertex(x2[i], h/2, z2[i]);
+  }
+  endShape();
+
+  //draw the top of the cylinder
+  beginShape(TRIANGLE_FAN); 
+  vertex(0, h/2, 0);
+
+  for (int i=0; i < x.length; i++) {
+    vertex(x2[i], h/2, z2[i]);
+  }
+  endShape();
   popMatrix();
 }
 

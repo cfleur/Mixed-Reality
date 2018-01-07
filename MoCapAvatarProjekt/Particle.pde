@@ -67,14 +67,15 @@ class Particle {
  
      // set appearance according to life stage
      shape.setStrokeWeight(0);
-     sphereDetail(20);
+     sphereDetail(8);
+     shininess(1.0);
     if (life.y >= firstcolor && life.y < secondcolor) { // ! need reference to global coordinate system
       //println("life 1 over");
-      shape.setFill(color(55,83,131));
+      shape.setFill(color(55,83,131, 140));
     } else if (life.y >= secondcolor) {
       //println("life 2 over");
-      shape.setFill(color(114,151,174));
-    } else shape.setFill(color(30,56,111));
+      shape.setFill(color(114,151,174, 110));
+    } else shape.setFill(color(30,56,111, 180));
    }
  
    void drawParticle() {
