@@ -351,7 +351,7 @@ void drawWater(Terrain terrain, ToxiclibsSupport gfx, int size, float height_, f
   waterMesh = terrain.toMesh(height_*0.8);
   pushStyle();
   noStroke();
-  fill(0, 160, 200, 200);
+  fill(0, 160, 200, 175);
   emissive(0, 40, 150);
   shininess(1.0);
   gfx.mesh(waterMesh, false);
