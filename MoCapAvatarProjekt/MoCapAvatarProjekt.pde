@@ -76,13 +76,18 @@ PImage water_img;
 // Lamp
 boolean lampOn = false;
 
+Earth earth;
+Rocks rocks1, rocks2;
+Lamp lamp1, lamp2, lamp3, lamp4;
+
 void setup () {
   //--- Display --- 
   size(800, 600, P3D);
   frameRate(75); 
-  //sphereDetail(8);
   smooth();
-  drawAxes();
+  
+  // Uncomment to see axes
+  //drawAxes();
 
   //--- Camera ---
   cam = new PeasyCam(this, 0, 0, 0, 650);
@@ -90,7 +95,7 @@ void setup () {
   cam.rotateX(PI/12);
   //cam.rotateZ(PI/8);
   cam.setMinimumDistance(200);
-  cam.setMaximumDistance(900);
+  cam.setMaximumDistance(750);
   cam.setSuppressRollRotationMode();
   camReset = cam.getState();
 
@@ -111,6 +116,14 @@ void setup () {
   // --- Particles ---
   particlesys0 = new ParticleSystem();
   particlesys1 = new ParticleSystem();
+
+  earth = new Earth(700, 500, 1000);
+  rocks1 = new Rocks();
+  rocks2 = new Rocks();
+  lamp1 = new Lamp();
+  lamp2 = new Lamp();
+  lamp3 = new Lamp();
+  lamp4 = new Lamp();
 }
 
 void draw() {
@@ -120,7 +133,7 @@ void draw() {
     resetCam = false;
   }
 
-  background(120, 160, 200);
+  background(60, 40, 60);
   lights();
 
   rotateX(PI);
@@ -128,12 +141,12 @@ void draw() {
 
   rotateY(PI/6);
 
-  drawEarth();
+  earth.disp();
 
-  drawLamp(200, -20, -200, lampOn);
-  drawLamp(-370, -70, -100, lampOn);
-  drawLamp(110, 12, -400, lampOn);
-  drawLamp(-160, -15, 160, lampOn);
+  lamp1.disp(200, 12, -200, lampOn);
+  lamp2.disp(-370, -70, -100, lampOn);
+  lamp3.disp(110, 23, -400, lampOn);
+  lamp4.disp(-160, -15, 160, lampOn);
 
   //antig is now inside the particle
   PVector antig = new PVector(random(-0.02, 0.02), 0.01, random(-0.02, 0.02));
@@ -142,7 +155,6 @@ void draw() {
   particlesys1.addForce(antig); // cubes 
 
   if (keyPressed) {
-    emissive(0, 0, 255);
     particlesys0.addParticleCube(random(2, 5));
     PVector wind = new PVector(random(-0.2, 0.17), random(0.02), random(-0.2, 0.17));
     particlesys0.addForce(wind); // spheres
@@ -151,12 +163,12 @@ void draw() {
 
   mocapinst.drawMocap();
 
-  drawRocks(120, -10, 120);
+  rocks1.disp(120, -10, 120);
   pushMatrix();
   scale(1.2);
   rotateX(PI);
   rotateX(PI/15);
-  drawRocks(-160, 30, -55);
+  rocks2.disp(-160, 30, -55);
   popMatrix();
 
   pushMatrix();
@@ -199,283 +211,6 @@ void draw() {
 // Classes ----------------------------
 //-------------------------------------
 
-class MocapInstance {   
-  Mocap mocap;
-  int currentFrame, firstFrame, lastFrame;
-  float[] translation;
-  float scl, strkWgt;
-  color clr;
-
-  MocapInstance (Mocap mocap1, int startingFrame, float[] transl, float scl1, color clr1, float strkWgt1) {
-    mocap = mocap1;
-    currentFrame = startingFrame;
-    firstFrame = startingFrame;
-    lastFrame = startingFrame-1;   
-    translation = transl;
-    scl = scl1;
-    clr = clr1;
-    strkWgt = strkWgt1;
-  }
-
-  void drawMocap() {
-    pushMatrix();
-    pushStyle();
-    stroke(clr);
-    strokeWeight(strkWgt);
-    translate(translation[0], translation[1], translation[2]);
-    scale(scl);
-    int countEnds = 0;
-
-    for (Joint itJ : mocap.joints) {
-      println(itJ.name + "!");
-
-
-      if (itJ.name.toString().equals("EndSitenull")) {
-        countEnds++;
-        println(countEnds);
-      }
-
-
-      /* 
-       
-       // IF WE FIX THE BUG (STRG+F for "#bug"), WE FIND THE ENSITE WITH THIS SYNTAX
-       
-       if (itJ.name.toString().equals("EndSiteHead")) {
-       println("Torso");
-       fill(255, 0, 0);
-       } else if (itJ.name.toString().equals("EndSiteRightWrist")) {
-       println("Right arm + head");
-       fill(0, 255, 0);
-       } else if (itJ.name.toString().equals("EndSiteLeftWrist")) {
-       println("Left arm + right hand");
-       fill(255, 255, 255);
-       } else if (itJ.name.toString().equals("EndSiteRightToe")) {
-       println("Right leg");
-       fill(0, 255, 255);
-       } else if (itJ.name.toString().equals("EndSiteLeftToe")) {
-       println("Left leg");
-       fill(0, 255, 255);
-       }
-       
-       */
-
-
-      //if (!(itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe") ||itJ.name.toString().equals("EndSitenull"))) {
-      // draw bodyparts
-      if (countEnds == 0) {
-        println("Torso");
-        fill(255, 0, 0);
-      } else if (countEnds == 1) {
-        println("Right arm + head");
-        fill(0, 255, 0);
-      } else if (countEnds == 2) {
-        println("Left arm + right hand");
-        fill(255, 255, 255);
-      } else if (countEnds == 3) {
-        println("Right leg");
-        fill(0, 255, 255);
-      } else if (countEnds == 4) {
-        println("Left leg");
-        fill(0, 255, 255);
-      } else
-        fill(0);
-
-
-      // Add force away from body to particles
-      //PVector point = new PVector(midX/2, midY/2, midZ/2);
-      PVector point = new PVector(itJ.parent.position.get(currentFrame).x + translation[0], itJ.parent.position.get(currentFrame).y + translation[1], itJ.parent.position.get(currentFrame).z + translation[2]);
-      //PVector point = new PVector(150,0,150);
-      particlesys0.fleefrombody(point);
-      particlesys1.fleefrombody(point);
-
-      pushMatrix();
-      translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
-      popMatrix();
-
-      // Draw body
-      pushMatrix();
-      translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
-      float midX = -(itJ.position.get(currentFrame).x - itJ.parent.position.get(currentFrame).x) ;
-      float midY = -(itJ.position.get(currentFrame).y - itJ.parent.position.get(currentFrame).y) ;
-      float midZ = -(itJ.position.get(currentFrame).z - itJ.parent.position.get(currentFrame).z) ;
-
-      translate(midX/2, midY/2, midZ/2);
-
-      //float a = atan(midY/midX);
-      //rotateZ(radians(a));
-      //float b = atan(midZ/midY);
-      //rotateX(radians(b));
-      //float c = atan(midX/midZ);
-      //rotateY(radians(c));
-      //      println(a,b,c);
-
-      float a = atan2(midY, midX);
-      rotateZ(a);
-      float b = atan2(midZ, midY);
-      rotateX(radians(b));
-      float c = atan2(midX, midZ);
-      rotateY(radians(c));
-      //println(a,b,c);
-
-      strokeWeight(3);
-      //noFill();
-      //fill(#0000EE);
-      box(/*Y*/(midX/cos(a))-4, 10, 10);
-      popMatrix();
-
-      // draw joints
-      if (!(itJ.name.toString().equals("EndSitenull"))) {//||itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe"))) {
-        pushMatrix();
-        translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
-        strokeWeight(0);
-        fill(0);
-        sphere(5*sqrt(2)-2);
-        //box(7,7,7);
-        popMatrix();
-      }
-
-      line(itJ.position.get(currentFrame).x, 
-        itJ.position.get(currentFrame).y, 
-        itJ.position.get(currentFrame).z, 
-        itJ.parent.position.get(currentFrame).x, 
-        itJ.parent.position.get(currentFrame).y, 
-        itJ.parent.position.get(currentFrame).z);
-      //}
-    }
-
-    popStyle();
-    popMatrix();
-    currentFrame = (currentFrame+1) % (mocap.frameNumber);
-    if (currentFrame==lastFrame+1) currentFrame = firstFrame;
-  }
-}
-
-class Mocap {
-  float frmRate;
-  int frameNumber;
-  ArrayList<Joint> joints = new ArrayList<Joint>();
-
-  Mocap (String fileName) {
-    String[] lines = loadStrings(fileName);
-    float frameTime;
-    int readMotion = 0;
-    int lineMotion = 0;
-    Joint currentParent = new Joint();
-
-    for (int i=0; i<lines.length; i++) {
-
-      //--- Read hierarchy --- 
-      String[] words = splitTokens(lines[i], " \t");
-
-      //list joints, with parent
-      if (words[0].equals("ROOT")||words[0].equals("JOINT")||words[0].equals("End")) {
-        Joint joint = new Joint(); 
-        joints.add(joint); // #bug THIS LINE IS BAD. We should move it to the bottom of this if-clause, then the EndSiteXXX will work :) 
-        if (words[0].equals("End")) {
-          joint.name = "EndSite"+((Joint)joints.get(joints.size()-1)).name;
-          joint.isEndSite = 1;
-        } else joint.name = words[1];
-        if (words[0].equals("ROOT")) {
-          joint.isRoot = 1;
-          currentParent = joint;
-        }
-        joint.parent = currentParent;
-      }
-
-      //find parent
-      if (words[0].equals("{")) {
-        currentParent = (Joint)joints.get(joints.size()-1);
-      }
-      if (words[0].equals("}")) {
-        currentParent = currentParent.parent;
-      }
-
-      //offset
-      if (words[0].equals("OFFSET")) {
-        joints.get(joints.size()-1).offset.x = float(words[1]);
-        joints.get(joints.size()-1).offset.y = float(words[2]);
-        joints.get(joints.size()-1).offset.z = float(words[3]);
-      }
-
-      //order of rotations
-      if (words[0].equals("CHANNELS")) {
-        joints.get(joints.size()-1).rotationChannels[0] = words[words.length-3];
-        joints.get(joints.size()-1).rotationChannels[1] = words[words.length-2];
-        joints.get(joints.size()-1).rotationChannels[2] = words[words.length-1];
-      }
-
-      if (words[0].equals("MOTION")) {
-        readMotion = 1;
-        lineMotion = i;
-      }
-
-      if (words[0].equals("Frames:"))
-        frameNumber = int(words[1]);
-
-      if (words[0].equals("Frame") && words[1].equals("Time:")) {
-        frameTime = float(words[2]);
-        frmRate = round(1000./frameTime)/1000.;
-      }
-
-      //--- Read motion, compute positions ---   
-      if (readMotion==1 && i>lineMotion+2) {
-
-        //motion data
-        PVector RotRelativPos = new PVector();
-        int iMotionData = 3;// number of data points read, skip root position      
-        for (Joint itJ : joints) {
-          if (itJ.isEndSite==0) {// skip end sites
-            float[][] currentTransMat = {{1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}};
-            //The transformation matrix is the (right-)product
-            //of transformations specified by CHANNELS
-            for (int iC=0; iC<itJ.rotationChannels.length; iC++) {
-              currentTransMat = multMat(currentTransMat, 
-                makeTransMat(float(words[iMotionData]), 
-                itJ.rotationChannels[iC]));
-              iMotionData++;
-            }
-            if (itJ.isRoot==1) {//root has no parent:
-              //transformation matrix is read directly
-              itJ.transMat = currentTransMat;
-            } else {//other joints:
-              //transformation matrix is obtained by right-applying
-              //the current transformation to the transMat of parent
-              itJ.transMat = multMat(itJ.parent.transMat, currentTransMat);
-            }
-          }
-
-          //positions
-          if (itJ.isRoot==1) {//root: position read directly + offset
-            RotRelativPos.set(float(words[0]), float(words[1]), float(words[2]));
-            RotRelativPos.add(itJ.offset);
-          } else {//other joints:
-            //apply trasnformation matrix from parent on offset
-            RotRelativPos = applyMatPVect(itJ.parent.transMat, itJ.offset);
-            //add transformed offset to parent position
-            RotRelativPos.add(itJ.parent.position.get(itJ.parent.position.size()-1));
-          }
-          //store position
-          itJ.position.add(RotRelativPos);
-        }
-      }
-    }
-  }
-}
-
-class Joint {
-  String name;
-  int isRoot = 0;
-  int isEndSite = 0;
-  Joint parent;
-  PVector offset = new PVector();
-  //transformation types (CHANNELS):
-  String[] rotationChannels = new String[3];
-  //current transformation matrix applied to this joint's children:
-  float[][] transMat = {{1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}};
-  //list of PVector, xyz position at each frame:
-  ArrayList<PVector> position = new ArrayList<PVector>();
-}
-
 
 //-------------------------------------
 // Functions --------------------------
@@ -500,8 +235,6 @@ void drawAxes() {
 // --- Display non-moving parts (UI) ---
 void displayUI() {
   PShape timeBox, resetBox, UIinfo;
-
-  // Calculate time from start of program
   int sec = millis()/1000;
   int min = millis()/60000;
   if (sec >= 60)
@@ -522,6 +255,16 @@ void displayUI() {
   timeBox.endShape(CLOSE);
   shape(timeBox);
 
+  UIinfo = createShape();
+  UIinfo.beginShape();
+  UIinfo.noStroke();
+  UIinfo.vertex(width-310, height-10, 0);
+  UIinfo.vertex(width-310, height-100, 0);
+  UIinfo.vertex(width-790, height-100, 0);
+  UIinfo.vertex(width-790, height-10, 0);
+  UIinfo.endShape(CLOSE);
+  shape(UIinfo);
+
   if (mouseX >= width-300 && mouseX <= width-150 && mouseY >= height-50 && mouseY <= height-10) {
     fill(50);
   }
@@ -535,16 +278,6 @@ void displayUI() {
   resetBox.endShape(CLOSE);
   shape(resetBox);
 
-  UIinfo = createShape();
-  UIinfo.beginShape();
-  UIinfo.noStroke();
-  UIinfo.vertex(width-310, height-10, 0);
-  UIinfo.vertex(width-310, height-100, 0);
-  UIinfo.vertex(width-790, height-100, 0);
-  UIinfo.vertex(width-790, height-10, 0);
-  UIinfo.endShape(CLOSE);
-  shape(UIinfo);
-
   fill(0, 200, 0);
   if (sec < 10)
     text("Time "+min+":0"+sec, width-130, height-25);
@@ -557,7 +290,7 @@ void displayUI() {
   fill(0, 255, 0);
   text("Interactivity", width-780, height-75);
   fill(225);
-  text("UP key= lights on, DOWN key= lights off, any key= wind\nclick-drag-scroll= camera", width-780, height-50);
+  text("UP key= lights on, DOWN key= lights off\nclick-drag-scroll= camera, hold any key= wind+cubes", width-780, height-50);
 
   popStyle();
 }
@@ -566,91 +299,15 @@ void mouseClicked() {
     resetCam = true;
 }
 
-// --- Earth ---
-void drawEarth() {
-  PShape earth;
-  PImage earth_img;
-  earth = createShape(SPHERE, 300);
-  earth_img = loadImage("img/earth.jpg");
-  earth.setStrokeWeight(0);
-  earth.setTexture(earth_img);
-
-  pushMatrix();
-  pushStyle();
-  sphereDetail(20);
-  translate(700, 500, 1000);
-  rotateY(map(mouseY, 0, height, 0, TWO_PI));
-  rotateX(map(mouseX, 0, width, 0, TWO_PI));
-  shape(earth);
-  popStyle();
-  popMatrix();
-}
-
-// ----- Lamp -----
-void drawLamp(int x, int y, int z, boolean on) {
-  // x, y z define the base location of the lamp
-  pushMatrix();
-  pushStyle();
-  strokeWeight(0);
-  fill(25, 20, 20);
-  translate(x, y, z);
-  cylinder(12, 6, 25, 15);
-  translate(0, 28, 0);
-  sphere(6);
-  cylinder(4, 4, 130, 15);
-  translate(0, 130, 0);
-  pushStyle();
-  fill(190);
-  if (on)
-    emissive(255);
-  sphere(10);
-  translate(0, 6, 0);
-  popStyle();
-  cylinder(18, 4, 8, 15);
-  if (on) {
-    //noLights();
-    //ambientLight(150, 150, 195);
-    pointLight(225, 225, 225, 0, -1, 0);
-  }
-  translate(0, 6, 0);
-  sphere(6);
-  popStyle();
-  popMatrix();
-}
-
-// ----- Lamp status -----
+// ----- Key status -----
 void keyPressed() {
-  if (keyCode == UP)
-    lampOn = true; 
-  if (keyCode == DOWN)
+  if (keyCode == UP) {
+    lampOn = true;
+  }
+  if (keyCode == DOWN) {
     lampOn = false;
-  else 
-  emissive(0, 0, 255);
-}
-
-// --- Rocks ---
-void drawRocks(float x, float y, float z) {
-  pushStyle();
-  pushMatrix();
-  shininess(-0.2);
-  sphereDetail(5);
-  strokeWeight(0);
-  translate(x, y, z);
-  fill(80, 60, 30);
-  sphere(70);
-  translate(35, 10, 40);
-  fill(70, 50, 20);
-  sphere(45);
-  translate(-15, 10, 40);
-  sphereDetail(4);
-  sphere(55);
-  translate(-70, -40, 20);
-  sphere(60);
-  translate(-40, 30, 40);
-  sphereDetail(5);
-  sphere(30);
-  popMatrix();
-  popStyle();
+  } else {
+  }
 }
 
 // --- Draw water ---
@@ -695,7 +352,7 @@ void drawWater(Terrain terrain, ToxiclibsSupport gfx, int size, float height_, f
   pushStyle();
   noStroke();
   fill(0, 160, 200, 200);
-  emissive(0, 0, 255);
+  emissive(0, 40, 150);
   shininess(1.0);
   gfx.mesh(waterMesh, false);
   popStyle();
@@ -716,8 +373,8 @@ void drawGround(Terrain terrain, ToxiclibsSupport gfx, int size, float height_, 
   groundMesh = terrain.toMesh(height_*0.8);
   pushStyle();
   noStroke();
-  fill(90, 50, 40);
-  emissive(75, 15, 40);
+  fill(80, 50, 40);
+  emissive(55, 15, 30);
   shininess(0.5);
   gfx.mesh(groundMesh, true);
 
