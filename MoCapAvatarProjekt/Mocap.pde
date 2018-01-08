@@ -26,17 +26,9 @@ class MocapInstance {
     int countEnds = 0;
 
     for (Joint itJ : mocap.joints) {
-      println(itJ.name + "!");
-
-
-      if (itJ.name.toString().equals("EndSitenull")) {
-        countEnds++;
-        println(countEnds);
-      }
-
+      //println(itJ.name + "!");
 
       /* 
-       
        // IF WE FIX THE BUG (STRG+F for "#bug"), WE FIND THE ENSITE WITH THIS SYNTAX
        
        if (itJ.name.toString().equals("EndSiteHead")) {
@@ -55,56 +47,40 @@ class MocapInstance {
        println("Left leg");
        fill(0, 255, 255);
        }
-       
        */
 
-
-      //if (!(itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe") ||itJ.name.toString().equals("EndSitenull"))) {
-      // draw bodyparts
-      if (countEnds == 0) {
-        println("Torso");
-        fill(255, 0, 0);
-      } else if (countEnds == 1) {
-        println("Right arm + head");
-        fill(0, 255, 0);
-      } else if (countEnds == 2) {
-        println("Left arm + right hand");
-        fill(255, 255, 255);
-      } else if (countEnds == 3) {
-        println("Right leg");
-        fill(0, 255, 255);
-      } else if (countEnds == 4) {
-        println("Left leg");
-        fill(0, 255, 255);
-      } else
-        fill(0);
-
-
       // Add force away from body to particles
-      //PVector point = new PVector(midX/2, midY/2, midZ/2);
       PVector point = new PVector(itJ.parent.position.get(currentFrame).x + translation[0], itJ.parent.position.get(currentFrame).y + translation[1], itJ.parent.position.get(currentFrame).z + translation[2]);
-      //PVector point = new PVector(150,0,150);
       particlesys0.fleefrombody(point);
       particlesys1.fleefrombody(point);
 
-
-      // ----- DO STUFF HERE !!!
-
+      // --- Draw body
       PVector joint = new PVector(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
       PVector parent = new PVector(itJ.parent.position.get(currentFrame).x, itJ.parent.position.get(currentFrame).y, itJ.parent.position.get(currentFrame).z);
       float h = parent.dist(joint); // NORM parent and joint
       int w = 5; // cylinder size
       int sides = 7; // number of faces
-
-
       float angle;
       float[] x = new float[sides+1];
       float[] z = new float[sides+1];
 
-      float[] x2 = new float[sides+1];
-      float[] z2 = new float[sides+1];
-
-      //popMatrix();
+      // Assign colours to rings
+      if (itJ.name.toString().equals("EndSitenull")) {
+        countEnds++;
+        //println(countEnds);
+      }
+      if (countEnds == 0) {
+        fill(255, 0, 0);
+      } else if (countEnds == 1) {
+        fill(0, 255, 0);
+      } else if (countEnds == 2) {
+        fill(255, 255, 255);
+      } else if (countEnds == 3) {
+        fill(0, 255, 255);
+      } else if (countEnds == 4) {
+        fill(0, 255, 255);
+      } else
+        fill(0);
 
       pushMatrix();
       translate(parent.x, parent.y, parent.z);
@@ -125,168 +101,17 @@ class MocapInstance {
       endShape();
       popMatrix();
 
-
-
-
-      /*/pushMatrix();
-       //translate(parent.x, parent.y, parent.z);
-       
-       //get the x and z position on a circle for all the sides
-       //      for (int i=0; i < x.length; i++) {
-       //        angle = TWO_PI / (sides) * i;
-       //        x[i] = (sin(angle) * w);
-       //        z[i] = (cos(angle) * w);
-       //      }
-       ////popMatrix();
-       ////pushMatrix();
-       ////      translate(joint.x, joint.y, joint.z);
-       
-       //      for (int i=0; i < x.length; i++) {
-       //        angle = TWO_PI / (sides) * i;
-       //        x2[i] = (sin(angle) * w);
-       //        z2[i] = (cos(angle) * w);
-       }
-       //popMatrix();
-       
-       ////draw the bottom of the cylinder
-       //beginShape(TRIANGLE_FAN);
-       //vertex(parent.x, parent.y, parent.z);
-       
-       //for (int i=0; i < x.length; i++) {
-       //  vertex(x[i], parent.y, z[i]);
-       //}
-       //endShape();
-       
-       ////draw the center of the cylinder
-       //beginShape(QUAD_STRIP); 
-       
-       //for (int i=0; i < x.length; i++) {
-       //  vertex(x[i], 0, z[i]);
-       //  vertex(x2[i], 0, z2[i]);
-       //}
-       //endShape();
-       
-       //draw the top of the cylinder
-       //beginShape(TRIANGLE_FAN); 
-       //vertex(joint.x, joint.y, joint.z);
-       
-       //for (int i=0; i < x.length; i++) {
-       //  vertex(x2[i], joint.y, z2[i]);
-       //}
-       //endShape();
-       //popMatrix();
-       
-       /// !! STOP --------
-       //if you cant figure it out use this code:
-       
-       
-       
-       //      /// !! -------- stuff below is just a rotation mess
-       
-       
-       //PVector joint = new PVector(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
-       //PVector parent = new PVector(itJ.parent.position.get(currentFrame).x, itJ.parent.position.get(currentFrame).y, itJ.parent.position.get(currentFrame).z);
-       //float h = parent.dist(joint); // NORM parent and joint
-       //int w = 5; // cylinder size
-       
-       ////float z = PVector.angleBetween(new PVector(parent.x, parent.y).normalize(), new PVector(joint.x, joint.y).normalize());
-       ////float x = PVector.angleBetween(new PVector(parent.y, parent.z), new PVector(joint.y, joint.z));
-       ////float y = PVector.angleBetween(new PVector(parent.z, parent.x), new PVector(joint.z, joint.x));
-       
-       //parent.normalize();
-       //joint.normalize();
-       //float hyp = parent.dist(joint);
-       //PVector dists = PVector.sub(parent, joint);
-       //dists.normalize();
-       //PVector alpha = dists.div(hyp);
-       //alpha.normalize();
-       
-       //float zz = map(atan2(alpha.x, alpha.y), PI, -PI, 0, TWO_PI);
-       //float xx = map(atan2(alpha.z, alpha.y), PI, -PI, 0, TWO_PI);
-       //float yy = map(atan2(alpha.x, alpha.z), PI, -PI, 0, TWO_PI);
-       
-       //float zz = atan2(dists.y, dists.x);
-       //float xx = atan2(dists.y, dists.z);
-       //float yy = atan2(dists.x, dists.z);
-       
-       //pushMatrix();
-       //translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
-       
-       //float z = map(atan2(parent.y, parent.x), PI, -PI, 0, TWO_PI);
-       //float x = map(atan2(parent.y, parent.z), PI, -PI, 0, TWO_PI);
-       //float y = map(atan2(parent.z, parent.x), PI, -PI, 0, TWO_PI);
-       
-       //translate(itJ.parent.position.get(currentFrame).x, itJ.parent.position.get(currentFrame).y, itJ.parent.position.get(currentFrame).z);
-       //rotateZ(zz);
-       //rotateX(xx);
-       //rotateY(yy);
-       
-       ////println(z, x, y, h);
-       //println(zz, xx, yy, h);
-       
-       ////translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
-       ////popMatrix();
-       
-       ////// Draw body
-       ////pushMatrix();
-       ////translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
-       ////float midX = -(itJ.position.get(currentFrame).x - itJ.parent.position.get(currentFrame).x) ;
-       ////float midY = -(itJ.position.get(currentFrame).y - itJ.parent.position.get(currentFrame).y) ;
-       ////float midZ = -(itJ.position.get(currentFrame).z - itJ.parent.position.get(currentFrame).z) ;
-       
-       ////translate(midX/2, midY/2, midZ/2);
-       
-       //////float a = atan(midY/midX);
-       //////rotateZ(radians(a));
-       //////float b = atan(midZ/midY);
-       //////rotateX(radians(b));
-       //////float c = atan(midX/midZ);
-       //////rotateY(radians(c));
-       //////      println(a,b,c);
-       
-       ////float z = atan2(midY, midX);
-       ////rotateZ(z);
-       ////float x = atan2(midY, midZ);
-       //////rotateX(x);
-       ////float y = atan2(midX, midZ);
-       //////rotateY(y);
-       ////println(z,x,y);
-       
-       //strokeWeight(3);
-       ////noFill();
-       ////fill(#0000EE);
-       //// box((midX/cos(z))-4, 10, 10);
-       //pushMatrix();
-       //rotateX(PI);
-       //rotateY(PI/4);
-       //cylinder(w, w, h, 7);
-       //popMatrix();
-       //popMatrix();
-       
-       //// draw joints
-       //if (!(itJ.name.toString().equals("EndSitenull"))) {//||itJ.name.toString().equals("RightToe")||itJ.name.toString().equals("LeftToe"))) {
-       //  pushMatrix();
-       //  translate(itJ.position.get(currentFrame).x, itJ.position.get(currentFrame).y, itJ.position.get(currentFrame).z);
-       //  strokeWeight(0);
-       //  fill(0);
-       //  sphereDetail(8);
-       //  sphere(5*sqrt(2)-2);
-       //  //box(7,7,7);
-       //  popMatrix();
-      /*/
-    //}
-
-    pushStyle();
-    stroke(10, 30, 25);
-    strokeCap(ROUND);
-    strokeWeight(15);
-    line(itJ.position.get(currentFrame).x, 
-      itJ.position.get(currentFrame).y, 
-      itJ.position.get(currentFrame).z, 
-      itJ.parent.position.get(currentFrame).x, 
-      itJ.parent.position.get(currentFrame).y, 
-      itJ.parent.position.get(currentFrame).z);
-    popStyle();
+      pushStyle();
+      stroke(10, 30, 25);
+      strokeCap(ROUND);
+      strokeWeight(15);
+      line(itJ.position.get(currentFrame).x, 
+        itJ.position.get(currentFrame).y, 
+        itJ.position.get(currentFrame).z, 
+        itJ.parent.position.get(currentFrame).x, 
+        itJ.parent.position.get(currentFrame).y, 
+        itJ.parent.position.get(currentFrame).z);
+      popStyle();
     }
 
     popStyle();

@@ -85,9 +85,6 @@ void setup () {
   size(800, 600, P3D);
   frameRate(75); 
   smooth();
-  
-  // Uncomment to see axes
-  //drawAxes();
 
   //--- Camera ---
   cam = new PeasyCam(this, 0, 0, 0, 650);
@@ -117,6 +114,7 @@ void setup () {
   particlesys0 = new ParticleSystem();
   particlesys1 = new ParticleSystem();
 
+  // --- Objects ---
   earth = new Earth(700, 500, 1000);
   rocks1 = new Rocks();
   rocks2 = new Rocks();
@@ -127,7 +125,6 @@ void setup () {
 }
 
 void draw() {
-  println(resetCam);
   if (resetCam) {
     cam.setState(camReset, 1000);
     resetCam = false;
@@ -137,12 +134,13 @@ void draw() {
   lights();
 
   rotateX(PI);
-  drawAxes();
+  
+  // Uncomment to see axes
+  //drawAxes();
 
   rotateY(PI/6);
 
   earth.disp();
-
   lamp1.disp(200, 12, -200, lampOn);
   lamp2.disp(-370, -70, -100, lampOn);
   lamp3.disp(110, 23, -400, lampOn);
@@ -186,31 +184,7 @@ void draw() {
   cam.beginHUD();
   displayUI();
   cam.endHUD();
-
-  /*
-  pushMatrix();
-   translate(width/5-80, height/5-80);
-   //rotateX(-PI/6);
-   rotateY(-radians(frameCount)/2);
-   noFill();
-   box(50);
-   popMatrix();
-   
-   pushMatrix();
-   translate((width/5)*2-100, height/5-100);
-   //rotateX(-PI/6);
-   rotateY(radians(frameCount+45));
-   box(50, 40, 100);
-   popMatrix();*/
 }
-
-
-
-
-//-------------------------------------
-// Classes ----------------------------
-//-------------------------------------
-
 
 //-------------------------------------
 // Functions --------------------------
